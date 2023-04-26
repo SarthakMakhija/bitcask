@@ -33,22 +33,17 @@ func NewSegments[Key key.Serializable](directory string, maxSegmentSizeBytes uin
 }
 
 func (segments *Segments[Key]) Append(key Key, value []byte) (*AppendEntryResponse, error) {
-	maybeRolloverSegment := func() error {
-		if segments.activeSegment.sizeInBytes() >= int64(segments.maxSegmentSizeBytes) {
-			segment, err := NewSegment[Key](segments.fileIdGenerator.Next(), segments.directory)
-			if err != nil {
-				return err
-			}
-			segments.inactiveSegments[segments.activeSegment.fileId] = segments.activeSegment
-			segments.activeSegment = segment
-			return nil
-		}
-		return nil
-	}
-	if err := maybeRolloverSegment(); err != nil {
+	if err := segments.maybeRolloverSegment(); err != nil {
 		return nil, err
 	}
 	return segments.activeSegment.Append(NewEntry[Key](key, value))
+}
+
+func (segments *Segments[Key]) AppendDeleted(key Key) (*AppendEntryResponse, error) {
+	if err := segments.maybeRolloverSegment(); err != nil {
+		return nil, err
+	}
+	return segments.activeSegment.Append(NewDeletedEntry[Key](key))
 }
 
 func (segments *Segments[Key]) Read(fileId uint64, offset int64, size uint64) (*StoredEntry, error) {
@@ -70,4 +65,17 @@ func (segments *Segments[Key]) RemoveAllInactive() {
 	for _, segment := range segments.inactiveSegments {
 		segment.remove()
 	}
+}
+
+func (segments *Segments[Key]) maybeRolloverSegment() error {
+	if segments.activeSegment.sizeInBytes() >= int64(segments.maxSegmentSizeBytes) {
+		segment, err := NewSegment[Key](segments.fileIdGenerator.Next(), segments.directory)
+		if err != nil {
+			return err
+		}
+		segments.inactiveSegments[segments.activeSegment.fileId] = segments.activeSegment
+		segments.activeSegment = segment
+		return nil
+	}
+	return nil
 }

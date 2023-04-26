@@ -27,10 +27,10 @@ func NewEntry[Key key.Serializable](key Key, value []byte) *Entry[Key] {
 	}
 }
 
-func NewDeletedEntry[Key key.Serializable](key Key, value []byte) *Entry[Key] {
+func NewDeletedEntry[Key key.Serializable](key Key) *Entry[Key] {
 	return &Entry[Key]{
 		key:   key,
-		value: valueReference{value: value, tombstone: 1},
+		value: valueReference{value: []byte{}, tombstone: 1},
 	}
 }
 

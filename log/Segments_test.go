@@ -52,3 +52,20 @@ func TestReadInvalidSegment(t *testing.T) {
 		t.Fatalf("Expected an error while reading a segment with an invalid file id but received none")
 	}
 }
+
+func TestReadASegmentWithADeletedEntry(t *testing.T) {
+	segments, _ := NewSegments[serializableKey](".", 100)
+	defer func() {
+		segments.RemoveActive()
+	}()
+
+	appendEntryResponse, _ := segments.AppendDeleted("topic")
+
+	storedEntry, _ := segments.Read(appendEntryResponse.FileId, appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
+	if string(storedEntry.Key) != "topic" {
+		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
+	}
+	if !storedEntry.Deleted {
+		t.Fatalf("Expected key to be deleted, but was not")
+	}
+}

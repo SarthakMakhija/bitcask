@@ -83,14 +83,11 @@ func TestNewSegmentWithADeletedEntry(t *testing.T) {
 		segment.remove()
 	}()
 
-	appendEntryResponse, _ := segment.Append(NewDeletedEntry[serializableKey]("topic", []byte("microservices")))
+	appendEntryResponse, _ := segment.Append(NewDeletedEntry[serializableKey]("topic"))
 
 	storedEntry, _ := segment.Read(appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
 	if string(storedEntry.Key) != "topic" {
 		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
-	}
-	if string(storedEntry.Value) != "microservices" {
-		t.Fatalf("Expected value to be %v, received %v", "microservices", string(storedEntry.Value))
 	}
 	if !storedEntry.Deleted {
 		t.Fatalf("Expected key to be deleted, but was not")

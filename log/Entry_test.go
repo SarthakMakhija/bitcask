@@ -25,17 +25,14 @@ func TestEncodesAKeyValuePair(t *testing.T) {
 }
 
 func TestEncodesADeletedKeyValuePair(t *testing.T) {
-	entry := NewDeletedEntry[serializableKey]("topic", []byte("microservices"))
+	entry := NewDeletedEntry[serializableKey]("topic")
 	encoded := entry.encode()
 
-	key, value, deleted := decode(encoded)
+	key, _, deleted := decode(encoded)
 	if !deleted {
 		t.Fatalf("Expected key to be deleted, but was not")
 	}
 	if string(key) != "topic" {
 		t.Fatalf("Expected decoded key to be %v, received %v", "topic", string(key))
-	}
-	if string(value) != "microservices" {
-		t.Fatalf("Expected decoded value to be %v, received %v", "microservices", string(value))
 	}
 }

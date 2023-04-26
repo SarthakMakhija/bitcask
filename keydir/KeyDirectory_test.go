@@ -1,4 +1,4 @@
-package bitcask
+package keydir
 
 import (
 	"reflect"

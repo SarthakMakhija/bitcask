@@ -1,4 +1,4 @@
-package bitcask
+package keydir
 
 type KeyDirectory[Key comparable] struct {
 	valueByKey map[Key][]byte

@@ -5,7 +5,7 @@ import "testing"
 func TestReadActiveSegmentWithAnEntry(t *testing.T) {
 	segments, _ := NewSegments[serializableKey](".", 100)
 	defer func() {
-		segments.removeActive()
+		segments.RemoveActive()
 	}()
 
 	appendEntryResponse, _ := segments.Append("topic", []byte("microservices"))
@@ -22,8 +22,8 @@ func TestReadActiveSegmentWithAnEntry(t *testing.T) {
 func TestReadAnInactiveSegmentWith(t *testing.T) {
 	segments, _ := NewSegments[serializableKey](".", 32)
 	defer func() {
-		segments.removeActive()
-		segments.removeAllInactive()
+		segments.RemoveActive()
+		segments.RemoveAllInactive()
 	}()
 
 	_, _ = segments.Append("topic", []byte("microservices"))

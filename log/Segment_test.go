@@ -10,9 +10,9 @@ func TestNewSegmentWithAnEntry(t *testing.T) {
 		segment.remove()
 	}()
 
-	entryLength, _, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
+	appendEntryResponse, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
 
-	storedEntry, _ := segment.Read(0, uint64(entryLength))
+	storedEntry, _ := segment.Read(appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
 	if string(storedEntry.Key) != "topic" {
 		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
 	}
@@ -27,10 +27,10 @@ func TestNewSegmentWithAnEntryAndPerformSync(t *testing.T) {
 		segment.remove()
 	}()
 
-	entryLength, _, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
+	appendEntryResponse, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
 	segment.sync()
 
-	storedEntry, _ := segment.Read(0, uint64(entryLength))
+	storedEntry, _ := segment.Read(appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
 	if string(storedEntry.Key) != "topic" {
 		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
 	}
@@ -45,10 +45,10 @@ func TestNewSegmentWith2Entries(t *testing.T) {
 		segment.remove()
 	}()
 
-	entryLengthTopic, _, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
-	entryLengthDisk, _, _ := segment.Append(NewEntry[serializableKey]("disk", []byte("ssd")))
+	_, _ = segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
+	appendEntryResponseDisk, _ := segment.Append(NewEntry[serializableKey]("disk", []byte("ssd")))
 
-	storedEntry, _ := segment.Read(int64(entryLengthTopic), uint64(entryLengthDisk))
+	storedEntry, _ := segment.Read(appendEntryResponseDisk.Offset, uint64(appendEntryResponseDisk.EntryLength))
 	if string(storedEntry.Key) != "disk" {
 		t.Fatalf("Expected key to be %v, received %v", "disk", string(storedEntry.Key))
 	}
@@ -63,13 +63,13 @@ func TestNewSegmentWith2EntriesAndValidateOffset(t *testing.T) {
 		segment.remove()
 	}()
 
-	entryLength, offset, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
-	_, anotherOffset, _ := segment.Append(NewEntry[serializableKey]("disk", []byte("ssd")))
+	appendEntryResponseTopic, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
+	appendEntryResponseDisk, _ := segment.Append(NewEntry[serializableKey]("disk", []byte("ssd")))
 
-	if offset != 0 {
-		t.Fatalf("Expected initial offset to be %v, received %v", 0, offset)
+	if appendEntryResponseTopic.Offset != 0 {
+		t.Fatalf("Expected initial offset to be %v, received %v", 0, appendEntryResponseTopic.Offset)
 	}
-	if anotherOffset != int64(entryLength) {
-		t.Fatalf("Expected another offset to be %v, received %v", entryLength, offset)
+	if appendEntryResponseDisk.Offset != int64(appendEntryResponseTopic.EntryLength) {
+		t.Fatalf("Expected another offset to be %v, received %v", appendEntryResponseTopic.EntryLength, appendEntryResponseDisk.Offset)
 	}
 }

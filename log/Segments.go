@@ -27,9 +27,8 @@ func NewSegments[Key Serializable](directory string, segmentSizeBytes uint64) (*
 	}, nil
 }
 
-func (segments *Segments[Key]) Append(key Key, value []byte) (uint64, int, int64, error) {
-	entryLength, offset, err := segments.active.Append(NewEntry[Key](key, value))
-	return segments.active.fileId, entryLength, offset, err
+func (segments *Segments[Key]) Append(key Key, value []byte) (*AppendEntryResponse, error) {
+	return segments.active.Append(NewEntry[Key](key, value))
 }
 
 func (segments *Segments[Key]) Read(fileId uint64, position int64, size uint64) (*StoredEntry, error) {

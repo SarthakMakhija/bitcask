@@ -8,9 +8,9 @@ func TestSegmentsWithAnEntry(t *testing.T) {
 		segments.removeActive()
 	}()
 
-	fileId, entryLength, _, _ := segments.Append("topic", []byte("microservices"))
+	appendEntryResponse, _ := segments.Append("topic", []byte("microservices"))
 
-	storedEntry, _ := segments.Read(fileId, 0, uint64(entryLength))
+	storedEntry, _ := segments.Read(appendEntryResponse.FileId, appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
 	if string(storedEntry.Key) != "topic" {
 		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
 	}

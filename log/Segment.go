@@ -11,6 +11,12 @@ type StoredEntry struct {
 	Value []byte
 }
 
+type AppendEntryResponse struct {
+	FileId      uint64
+	Offset      int64
+	EntryLength int
+}
+
 type Segment[Key Serializable] struct {
 	fileId   uint64
 	filePath string
@@ -35,10 +41,17 @@ func NewSegment[Key Serializable](fileId uint64, directory string) (*Segment[Key
 	}, nil
 }
 
-func (segment *Segment[Key]) Append(entry *Entry[Key]) (int, int64, error) {
+func (segment *Segment[Key]) Append(entry *Entry[Key]) (*AppendEntryResponse, error) {
 	encoded := entry.encode()
 	offset, err := segment.store.append(encoded)
-	return len(encoded), offset, err
+	if err != nil {
+		return nil, err
+	}
+	return &AppendEntryResponse{
+		FileId:      segment.fileId,
+		Offset:      offset,
+		EntryLength: len(encoded),
+	}, nil
 }
 
 func (segment *Segment[Key]) Read(position int64, size uint64) (*StoredEntry, error) {

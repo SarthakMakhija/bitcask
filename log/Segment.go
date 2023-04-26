@@ -54,8 +54,8 @@ func (segment *Segment[Key]) Append(entry *Entry[Key]) (*AppendEntryResponse, er
 	}, nil
 }
 
-func (segment *Segment[Key]) Read(position int64, size uint64) (*StoredEntry, error) {
-	bytes, err := segment.store.read(position, size)
+func (segment *Segment[Key]) Read(offset int64, size uint64) (*StoredEntry, error) {
+	bytes, err := segment.store.read(offset, size)
 	if err != nil {
 		return nil, err
 	}

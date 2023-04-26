@@ -25,11 +25,11 @@ func NewStore(filePath string) (*Store, error) {
 func (store *Store) append(bytes []byte) (int64, error) {
 	bytesWritten, err := store.file.Write(bytes)
 	offset := store.currentOffset
-	if bytesWritten < len(bytes) {
-		return -1, errors.New(fmt.Sprintf("Could not append %v bytes", len(bytes)))
-	}
 	if err != nil {
 		return -1, err
+	}
+	if bytesWritten < len(bytes) {
+		return -1, errors.New(fmt.Sprintf("Could not append %v bytes", len(bytes)))
 	}
 	store.currentOffset = store.currentOffset + int64(bytesWritten)
 	return offset, nil
@@ -47,6 +47,10 @@ func (store *Store) read(offset int64, size uint64) ([]byte, error) {
 		return nil, err
 	}
 	return bytes, nil
+}
+
+func (store *Store) size() int64 {
+	return store.currentOffset
 }
 
 func (store *Store) sync() {

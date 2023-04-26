@@ -81,3 +81,21 @@ func TestAppendsToTheStoreAndPerformsSync(t *testing.T) {
 		t.Fatalf("Expected store content to be %v, received %v", content, string(bytes))
 	}
 }
+
+func TestAppendsMultipleEntriesToTheStoreAndValidatesSize(t *testing.T) {
+	file, _ := os.CreateTemp(".", "append_only")
+	store, _ := NewStore(file.Name())
+	defer func() {
+		_ = os.RemoveAll(file.Name())
+	}()
+
+	contentAppendOnly := "append-only-log"
+	contentStorage := "storage"
+
+	_, _ = store.append([]byte(contentAppendOnly))
+	_, _ = store.append([]byte(contentStorage))
+
+	if store.size() != int64(len(contentAppendOnly)+len(contentStorage)) {
+		t.Fatalf("Expected store size to be %v, received %v", len(contentAppendOnly)+len(contentStorage), store.size())
+	}
+}

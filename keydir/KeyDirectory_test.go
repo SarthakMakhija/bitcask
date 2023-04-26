@@ -31,6 +31,22 @@ func TestUpdatesAKeyInKeyDirectory(t *testing.T) {
 	}
 }
 
+func TestDeletesAKeyInKeyDirectory(t *testing.T) {
+	keyDirectory := NewKeyDirectory[string](16)
+	keyDirectory.Put("topic", NewEntry(1, 10, 20))
+
+	entry, _ := keyDirectory.Get("topic")
+	if !reflect.DeepEqual(NewEntry(1, 10, 20), entry) {
+		t.Fatalf("Expected %v, received %v from key directory", NewEntry(1, 10, 20), entry)
+	}
+
+	keyDirectory.Delete("topic")
+	_, ok := keyDirectory.Get("topic")
+	if ok {
+		t.Fatalf("Expected the key %v to have been deleted but was not", "topic")
+	}
+}
+
 func TestGetANonExistentKeyInKeyDirectory(t *testing.T) {
 	keyDirectory := NewKeyDirectory[string](16)
 

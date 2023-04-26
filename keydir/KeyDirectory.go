@@ -18,6 +18,10 @@ func (keyDirectory *KeyDirectory[Key]) Update(key Key, value *Entry) {
 	keyDirectory.entryByKey[key] = value
 }
 
+func (keyDirectory *KeyDirectory[Key]) Delete(key Key) {
+	delete(keyDirectory.entryByKey, key)
+}
+
 func (keyDirectory *KeyDirectory[Key]) Get(key Key) (*Entry, bool) {
 	value, ok := keyDirectory.entryByKey[key]
 	return value, ok

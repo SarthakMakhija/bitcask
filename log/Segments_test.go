@@ -26,15 +26,15 @@ func TestReadAnInactiveSegmentWith(t *testing.T) {
 		segments.RemoveAllInactive()
 	}()
 
-	_, _ = segments.Append("topic", []byte("microservices"))
+	appendEntryResponseTopic, _ := segments.Append("topic", []byte("microservices"))
 	_, _ = segments.Append("diskType", []byte("solid state drive"))
-	appendEntryResponse, _ := segments.Append("databaseType", []byte("distributed"))
+	_, _ = segments.Append("databaseType", []byte("distributed"))
 
-	storedEntry, _ := segments.Read(appendEntryResponse.FileId, appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
-	if string(storedEntry.Key) != "databaseType" {
-		t.Fatalf("Expected key to be %v, received %v", "databaseType", string(storedEntry.Key))
+	storedEntry, _ := segments.Read(appendEntryResponseTopic.FileId, appendEntryResponseTopic.Offset, uint64(appendEntryResponseTopic.EntryLength))
+	if string(storedEntry.Key) != "topic" {
+		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
 	}
-	if string(storedEntry.Value) != "distributed" {
-		t.Fatalf("Expected value to be %v, received %v", "distributed", string(storedEntry.Value))
+	if string(storedEntry.Value) != "microservices" {
+		t.Fatalf("Expected value to be %v, received %v", "microservices", string(storedEntry.Value))
 	}
 }

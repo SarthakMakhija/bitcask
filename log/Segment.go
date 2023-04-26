@@ -63,6 +63,10 @@ func (segment *Segment[Key]) Read(offset int64, size uint64) (*StoredEntry, erro
 	return &StoredEntry{Key: key, Value: value}, nil
 }
 
+func (segment *Segment[Key]) sizeInBytes() int64 {
+	return segment.store.sizeInBytes()
+}
+
 func (segment *Segment[Key]) sync() {
 	segment.store.sync()
 }

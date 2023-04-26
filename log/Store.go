@@ -49,7 +49,7 @@ func (store *Store) read(offset int64, size uint64) ([]byte, error) {
 	return bytes, nil
 }
 
-func (store *Store) size() int64 {
+func (store *Store) sizeInBytes() int64 {
 	return store.currentOffset
 }
 

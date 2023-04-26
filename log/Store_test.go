@@ -95,7 +95,7 @@ func TestAppendsMultipleEntriesToTheStoreAndValidatesSize(t *testing.T) {
 	_, _ = store.append([]byte(contentAppendOnly))
 	_, _ = store.append([]byte(contentStorage))
 
-	if store.size() != int64(len(contentAppendOnly)+len(contentStorage)) {
-		t.Fatalf("Expected store size to be %v, received %v", len(contentAppendOnly)+len(contentStorage), store.size())
+	if store.sizeInBytes() != int64(len(contentAppendOnly)+len(contentStorage)) {
+		t.Fatalf("Expected store sizeInBytes to be %v, received %v", len(contentAppendOnly)+len(contentStorage), store.sizeInBytes())
 	}
 }

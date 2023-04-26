@@ -9,21 +9,26 @@ import (
 var reservedKeySize, reservedValueSize = uint32(unsafe.Sizeof(uint32(0))), uint32(unsafe.Sizeof(uint32(0)))
 var littleEndian = binary.LittleEndian
 
+type valueReference struct {
+	value   []byte
+	deleted byte
+}
+
 type Entry[Key key.Serializable] struct {
 	key   Key
-	value []byte
+	value valueReference
 }
 
 func NewEntry[Key key.Serializable](key Key, value []byte) *Entry[Key] {
 	return &Entry[Key]{
 		key:   key,
-		value: value,
+		value: valueReference{value: value, deleted: 0},
 	}
 }
 
 func (entry *Entry[Key]) encode() []byte {
 	serializedKey := entry.key.Serialize()
-	keySize, valueSize := uint32(len(serializedKey)), uint32(len(entry.value))
+	keySize, valueSize := uint32(len(serializedKey)), uint32(len(entry.value.value))
 
 	encoded := make([]byte, reservedKeySize+reservedValueSize+keySize+valueSize)
 	var offset uint32 = 0
@@ -37,7 +42,7 @@ func (entry *Entry[Key]) encode() []byte {
 	copy(encoded[offset:], serializedKey)
 	offset = offset + keySize
 
-	copy(encoded[offset:], entry.value)
+	copy(encoded[offset:], entry.value.value)
 	return encoded
 }
 

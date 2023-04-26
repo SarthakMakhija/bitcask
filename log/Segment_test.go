@@ -6,7 +6,7 @@ import (
 
 func TestNewSegmentWithAnEntry(t *testing.T) {
 	segment, _ := NewSegment[serializableKey](1, ".")
-	entryLength, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
+	entryLength, _, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
 
 	storedEntry, _ := segment.Read(0, uint64(entryLength))
 	if string(storedEntry.Key) != "topic" {
@@ -19,7 +19,7 @@ func TestNewSegmentWithAnEntry(t *testing.T) {
 
 func TestNewSegmentWithAnEntryAndPerformSync(t *testing.T) {
 	segment, _ := NewSegment[serializableKey](1, ".")
-	entryLength, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
+	entryLength, _, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
 	segment.sync()
 
 	storedEntry, _ := segment.Read(0, uint64(entryLength))
@@ -33,8 +33,8 @@ func TestNewSegmentWithAnEntryAndPerformSync(t *testing.T) {
 
 func TestNewSegmentWith2Entries(t *testing.T) {
 	segment, _ := NewSegment[serializableKey](1, ".")
-	entryLengthTopic, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
-	entryLengthDisk, _ := segment.Append(NewEntry[serializableKey]("disk", []byte("ssd")))
+	entryLengthTopic, _, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
+	entryLengthDisk, _, _ := segment.Append(NewEntry[serializableKey]("disk", []byte("ssd")))
 
 	storedEntry, _ := segment.Read(int64(entryLengthTopic), uint64(entryLengthDisk))
 	if string(storedEntry.Key) != "disk" {
@@ -42,5 +42,18 @@ func TestNewSegmentWith2Entries(t *testing.T) {
 	}
 	if string(storedEntry.Value) != "ssd" {
 		t.Fatalf("Expected value to be %v, received %v", "ssd", string(storedEntry.Value))
+	}
+}
+
+func TestNewSegmentWith2EntriesAndValidateOffset(t *testing.T) {
+	segment, _ := NewSegment[serializableKey](1, ".")
+	entryLength, offset, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
+	_, anotherOffset, _ := segment.Append(NewEntry[serializableKey]("disk", []byte("ssd")))
+
+	if offset != 0 {
+		t.Fatalf("Expected initial offset to be %v, received %v", 0, offset)
+	}
+	if anotherOffset != int64(entryLength) {
+		t.Fatalf("Expected another offset to be %v, received %v", entryLength, offset)
 	}
 }

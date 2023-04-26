@@ -35,9 +35,10 @@ func NewSegment[Key Serializable](fileId uint64, directory string) (*Segment[Key
 	}, nil
 }
 
-func (segment *Segment[Key]) Append(entry *Entry[Key]) (int, error) {
+func (segment *Segment[Key]) Append(entry *Entry[Key]) (int, int64, error) {
 	encoded := entry.encode()
-	return len(encoded), segment.store.append(encoded)
+	offset, err := segment.store.append(encoded)
+	return len(encoded), offset, err
 }
 
 func (segment *Segment[Key]) Read(position int64, size uint64) (*StoredEntry, error) {

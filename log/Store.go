@@ -7,7 +7,8 @@ import (
 )
 
 type Store struct {
-	file *os.File
+	file          *os.File
+	currentOffset int64
 }
 
 func NewStore(filePath string) (*Store, error) {
@@ -16,16 +17,22 @@ func NewStore(filePath string) (*Store, error) {
 		return nil, err
 	}
 	return &Store{
-		file: file,
+		file:          file,
+		currentOffset: 0,
 	}, nil
 }
 
-func (store *Store) append(bytes []byte) error {
-	n, err := store.file.Write(bytes)
-	if n < len(bytes) {
-		return errors.New(fmt.Sprintf("Could not append %v bytes", len(bytes)))
+func (store *Store) append(bytes []byte) (int64, error) {
+	bytesWritten, err := store.file.Write(bytes)
+	offset := store.currentOffset
+	if bytesWritten < len(bytes) {
+		return -1, errors.New(fmt.Sprintf("Could not append %v bytes", len(bytes)))
 	}
-	return err
+	if err != nil {
+		return -1, err
+	}
+	store.currentOffset = store.currentOffset + int64(bytesWritten)
+	return offset, nil
 }
 
 func (store *Store) read(offset int64, size uint64) ([]byte, error) {

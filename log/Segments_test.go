@@ -38,3 +38,17 @@ func TestReadAnInactiveSegmentWith(t *testing.T) {
 		t.Fatalf("Expected value to be %v, received %v", "microservices", string(storedEntry.Value))
 	}
 }
+
+func TestReadInvalidSegment(t *testing.T) {
+	segments, _ := NewSegments[serializableKey](".", 100)
+	defer func() {
+		segments.RemoveActive()
+	}()
+
+	appendEntryResponse, _ := segments.Append("topic", []byte("microservices"))
+
+	_, err := segments.Read(10, appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
+	if err == nil {
+		t.Fatalf("Expected an error while reading a segment with an invalid file id but received none")
+	}
+}

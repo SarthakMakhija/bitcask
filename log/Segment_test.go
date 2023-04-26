@@ -6,6 +6,10 @@ import (
 
 func TestNewSegmentWithAnEntry(t *testing.T) {
 	segment, _ := NewSegment[serializableKey](1, ".")
+	defer func() {
+		segment.remove()
+	}()
+
 	entryLength, _, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
 
 	storedEntry, _ := segment.Read(0, uint64(entryLength))
@@ -18,7 +22,11 @@ func TestNewSegmentWithAnEntry(t *testing.T) {
 }
 
 func TestNewSegmentWithAnEntryAndPerformSync(t *testing.T) {
-	segment, _ := NewSegment[serializableKey](1, ".")
+	segment, _ := NewSegment[serializableKey](2, ".")
+	defer func() {
+		segment.remove()
+	}()
+
 	entryLength, _, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
 	segment.sync()
 
@@ -32,7 +40,11 @@ func TestNewSegmentWithAnEntryAndPerformSync(t *testing.T) {
 }
 
 func TestNewSegmentWith2Entries(t *testing.T) {
-	segment, _ := NewSegment[serializableKey](1, ".")
+	segment, _ := NewSegment[serializableKey](3, ".")
+	defer func() {
+		segment.remove()
+	}()
+
 	entryLengthTopic, _, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
 	entryLengthDisk, _, _ := segment.Append(NewEntry[serializableKey]("disk", []byte("ssd")))
 
@@ -46,7 +58,11 @@ func TestNewSegmentWith2Entries(t *testing.T) {
 }
 
 func TestNewSegmentWith2EntriesAndValidateOffset(t *testing.T) {
-	segment, _ := NewSegment[serializableKey](1, ".")
+	segment, _ := NewSegment[serializableKey](4, ".")
+	defer func() {
+		segment.remove()
+	}()
+
 	entryLength, offset, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
 	_, anotherOffset, _ := segment.Append(NewEntry[serializableKey]("disk", []byte("ssd")))
 

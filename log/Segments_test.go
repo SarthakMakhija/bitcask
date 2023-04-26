@@ -4,6 +4,10 @@ import "testing"
 
 func TestSegmentsWithAnEntry(t *testing.T) {
 	segments, _ := NewSegments[serializableKey](".", 100)
+	defer func() {
+		segments.removeActive()
+	}()
+
 	fileId, entryLength, _, _ := segments.Append("topic", []byte("microservices"))
 
 	storedEntry, _ := segments.Read(fileId, 0, uint64(entryLength))

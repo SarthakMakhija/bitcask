@@ -36,3 +36,7 @@ func (segments *Segments[Key]) Read(fileId uint64, position int64, size uint64) 
 	//TODO: fetch from the segment matching the file id
 	return segments.active.Read(position, size)
 }
+
+func (segments *Segments[Key]) removeActive() {
+	segments.active.remove()
+}

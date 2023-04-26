@@ -1,8 +1,8 @@
 package log
 
 import (
-	"bitcask/id"
 	"bitcask/key"
+	"bitcask/log/id"
 	"errors"
 	"fmt"
 )

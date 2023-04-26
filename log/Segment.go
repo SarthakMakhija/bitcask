@@ -36,3 +36,7 @@ func (segment *Segment[Key]) Read(position int64, size uint64) (*StoredEntry, er
 	key, value := decode(bytes)
 	return &StoredEntry{Key: key, Value: value}, nil
 }
+
+func (segment *Segment[Key]) sync() {
+	segment.store.sync()
+}

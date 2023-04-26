@@ -41,3 +41,7 @@ func (store *Store) read(offset int64, size uint64) ([]byte, error) {
 	}
 	return bytes, nil
 }
+
+func (store *Store) sync() {
+	store.file.Sync()
+}

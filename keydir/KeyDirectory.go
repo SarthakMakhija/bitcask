@@ -14,6 +14,10 @@ func (keyDirectory *KeyDirectory[Key]) Put(key Key, value *Entry) {
 	keyDirectory.valueByKey[key] = value
 }
 
+func (keyDirectory *KeyDirectory[Key]) Update(key Key, value *Entry) {
+	keyDirectory.valueByKey[key] = value
+}
+
 func (keyDirectory *KeyDirectory[Key]) Get(key Key) (*Entry, bool) {
 	value, ok := keyDirectory.valueByKey[key]
 	return value, ok

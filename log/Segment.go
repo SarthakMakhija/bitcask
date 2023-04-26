@@ -1,6 +1,7 @@
 package log
 
 import (
+	"bitcask/key"
 	"fmt"
 	"os"
 	"path"
@@ -17,7 +18,7 @@ type AppendEntryResponse struct {
 	EntryLength int
 }
 
-type Segment[Key Serializable] struct {
+type Segment[Key key.Serializable] struct {
 	fileId   uint64
 	filePath string
 	store    *Store
@@ -25,7 +26,7 @@ type Segment[Key Serializable] struct {
 
 const segmentFilePrefix = "bitcask"
 
-func NewSegment[Key Serializable](fileId uint64, directory string) (*Segment[Key], error) {
+func NewSegment[Key key.Serializable](fileId uint64, directory string) (*Segment[Key], error) {
 	filePath, err := createSegment(fileId, directory)
 	if err != nil {
 		return nil, err
@@ -59,8 +60,8 @@ func (segment *Segment[Key]) Read(offset int64, size uint64) (*StoredEntry, erro
 	if err != nil {
 		return nil, err
 	}
-	key, value := decode(bytes)
-	return &StoredEntry{Key: key, Value: value}, nil
+	decodedKey, value := decode(bytes)
+	return &StoredEntry{Key: decodedKey, Value: value}, nil
 }
 
 func (segment *Segment[Key]) sizeInBytes() int64 {

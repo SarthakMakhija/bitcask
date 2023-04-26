@@ -4,7 +4,7 @@ import "testing"
 
 type serializableKey string
 
-func (key serializableKey) serialize() []byte {
+func (key serializableKey) Serialize() []byte {
 	return []byte(key)
 }
 

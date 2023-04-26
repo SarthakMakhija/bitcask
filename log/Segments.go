@@ -2,11 +2,12 @@ package log
 
 import (
 	"bitcask/id"
+	"bitcask/key"
 	"errors"
 	"fmt"
 )
 
-type Segments[Key Serializable] struct {
+type Segments[Key key.Serializable] struct {
 	activeSegment    *Segment[Key]
 	inactiveSegments map[uint64]*Segment[Key]
 	fileIdGenerator  *id.FileIdGenerator
@@ -14,7 +15,7 @@ type Segments[Key Serializable] struct {
 	directory        string
 }
 
-func NewSegments[Key Serializable](directory string, segmentSizeBytes uint64) (*Segments[Key], error) {
+func NewSegments[Key key.Serializable](directory string, segmentSizeBytes uint64) (*Segments[Key], error) {
 	fileIdGenerator := id.NewFileIdGenerator()
 	fileId := fileIdGenerator.Next()
 	segment, err := NewSegment[Key](fileId, directory)

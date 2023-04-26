@@ -7,19 +7,19 @@ import (
 
 func TestPutsAKeyInKeyDirectory(t *testing.T) {
 	keyDirectory := NewKeyDirectory[string](16)
-	keyDirectory.Put("topic", []byte("microservices"))
+	keyDirectory.Put("topic", NewEntry(1, 10, 20))
 
-	value, _ := keyDirectory.Get("topic")
-	if !reflect.DeepEqual([]byte("microservices"), value) {
-		t.Fatalf("Expected %v, received %v from key directory", []byte("microservices"), string(value))
+	entry, _ := keyDirectory.Get("topic")
+	if !reflect.DeepEqual(NewEntry(1, 10, 20), entry) {
+		t.Fatalf("Expected %v, received %v from key directory", NewEntry(1, 10, 20), entry)
 	}
 }
 
 func TestGetANonExistentKeyInKeyDirectory(t *testing.T) {
 	keyDirectory := NewKeyDirectory[string](16)
 
-	value, ok := keyDirectory.Get("non-existing")
+	entry, ok := keyDirectory.Get("non-existing")
 	if ok {
-		t.Fatalf("Expected value to be missing for the key %v, but was present %v", "non-existing", string(value))
+		t.Fatalf("Expected value to be missing for the key %v, but was present %v", "non-existing", entry)
 	}
 }

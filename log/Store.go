@@ -45,3 +45,7 @@ func (store *Store) read(offset int64, size uint64) ([]byte, error) {
 func (store *Store) sync() {
 	store.file.Sync()
 }
+
+func (store *Store) remove() {
+	_ = os.RemoveAll(store.file.Name())
+}

@@ -1,16 +1,11 @@
 package log
 
 import (
-	"os"
 	"testing"
 )
 
 func TestNewSegmentWithAnEntry(t *testing.T) {
-	file, _ := os.CreateTemp(".", "segment")
-	defer func() {
-		_ = os.RemoveAll(file.Name())
-	}()
-	segment, _ := NewSegment[serializableKey](1, file.Name())
+	segment, _ := NewSegment[serializableKey](1, ".")
 	entryLength, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
 
 	storedEntry, _ := segment.Read(0, uint64(entryLength))
@@ -23,11 +18,7 @@ func TestNewSegmentWithAnEntry(t *testing.T) {
 }
 
 func TestNewSegmentWithAnEntryAndPerformSync(t *testing.T) {
-	file, _ := os.CreateTemp(".", "segment")
-	defer func() {
-		_ = os.RemoveAll(file.Name())
-	}()
-	segment, _ := NewSegment[serializableKey](1, file.Name())
+	segment, _ := NewSegment[serializableKey](1, ".")
 	entryLength, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
 	segment.sync()
 
@@ -41,11 +32,7 @@ func TestNewSegmentWithAnEntryAndPerformSync(t *testing.T) {
 }
 
 func TestNewSegmentWith2Entries(t *testing.T) {
-	file, _ := os.CreateTemp(".", "segment")
-	defer func() {
-		_ = os.RemoveAll(file.Name())
-	}()
-	segment, _ := NewSegment[serializableKey](1, file.Name())
+	segment, _ := NewSegment[serializableKey](1, ".")
 	entryLengthTopic, _ := segment.Append(NewEntry[serializableKey]("topic", []byte("microservices")))
 	entryLengthDisk, _ := segment.Append(NewEntry[serializableKey]("disk", []byte("ssd")))
 

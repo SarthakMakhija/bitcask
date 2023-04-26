@@ -1,5 +1,11 @@
 package log
 
+import (
+	"fmt"
+	"os"
+	"path"
+)
+
 type StoredEntry struct {
 	Key   []byte
 	Value []byte
@@ -11,7 +17,13 @@ type Segment[Key Serializable] struct {
 	store    *Store
 }
 
-func NewSegment[Key Serializable](fileId uint64, filePath string) (*Segment[Key], error) {
+const segmentFilePrefix = "bitcask"
+
+func NewSegment[Key Serializable](fileId uint64, directory string) (*Segment[Key], error) {
+	filePath, err := createSegment(fileId, directory)
+	if err != nil {
+		return nil, err
+	}
 	store, err := NewStore(filePath)
 	if err != nil {
 		return nil, err
@@ -39,4 +51,21 @@ func (segment *Segment[Key]) Read(position int64, size uint64) (*StoredEntry, er
 
 func (segment *Segment[Key]) sync() {
 	segment.store.sync()
+}
+
+func (segment *Segment[Key]) remove() {
+	segment.store.remove()
+}
+
+func createSegment(fileId uint64, directory string) (string, error) {
+	filePath := segmentName(fileId, directory)
+	_, err := os.Create(filePath)
+	if err != nil {
+		return "", err
+	}
+	return filePath, nil
+}
+
+func segmentName(fileId uint64, directory string) string {
+	return path.Join(directory, fmt.Sprintf("%v_%v", fileId, segmentFilePrefix))
 }

@@ -44,7 +44,7 @@ func (entry *Entry[Key]) encode() []byte {
 	return encoded
 }
 
-func (entry *Entry[Key]) decode(content []byte) ([]byte, []byte) {
+func decode(content []byte) ([]byte, []byte) {
 	var offset uint32 = 0
 	keySize := littleEndian.Uint32(content[offset:reservedKeySize])
 	offset = offset + reservedKeySize

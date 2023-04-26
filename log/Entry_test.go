@@ -12,7 +12,7 @@ func TestEncodesAKeyValuePair(t *testing.T) {
 	entry := NewEntry[serializableKey]("topic", []byte("microservices"))
 	encoded := entry.encode()
 
-	key, value := entry.decode(encoded)
+	key, value := decode(encoded)
 	if string(key) != "topic" {
 		t.Fatalf("Expected decoded key to be %v, received %v", "topic", string(key))
 	}

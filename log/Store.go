@@ -20,7 +20,7 @@ func NewStore(filePath string) (*Store, error) {
 	}, nil
 }
 
-func (store *Store) Append(bytes []byte) error {
+func (store *Store) append(bytes []byte) error {
 	n, err := store.file.Write(bytes)
 	if n < len(bytes) {
 		return errors.New(fmt.Sprintf("Could not append %v bytes", len(bytes)))
@@ -28,7 +28,7 @@ func (store *Store) Append(bytes []byte) error {
 	return err
 }
 
-func (store *Store) Read(offset int64, size uint64) ([]byte, error) {
+func (store *Store) read(offset int64, size uint64) ([]byte, error) {
 	_, err := store.file.Seek(offset, 0)
 	if err != nil {
 		return nil, err

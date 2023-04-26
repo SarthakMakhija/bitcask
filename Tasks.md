@@ -1,0 +1,8 @@
+- [ ] Concurrency
+- [ ] Merge and compaction
+- [ ] Hint file
+- [ ] Recovery on DB init
+- [ ] Provide type aliases for commonly used types
+- [ ] Transaction (optional)
+- [ ] Documentation
+- [ ] README

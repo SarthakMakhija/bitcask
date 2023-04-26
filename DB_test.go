@@ -82,7 +82,7 @@ func TestUpdateAndDoAGet(t *testing.T) {
 	config := NewConfig(".", 32, 16)
 	db, _ := NewDB[serializableKey](config)
 	defer db.ClearLog()
-	
+
 	_ = db.Put("topic", []byte("microservices"))
 	_ = db.Update("topic", []byte("storage engine"))
 
@@ -90,5 +90,33 @@ func TestUpdateAndDoAGet(t *testing.T) {
 
 	if !reflect.DeepEqual([]byte("storage engine"), value) {
 		t.Fatalf("Expected value to be %v, received %v", "storage engine", string(value))
+	}
+}
+
+func TestDeleteAndDoASilentGet(t *testing.T) {
+	config := NewConfig(".", 32, 16)
+	db, _ := NewDB[serializableKey](config)
+	defer db.ClearLog()
+
+	_ = db.Put("topic", []byte("microservices"))
+	_ = db.Delete("topic")
+
+	_, exists := db.SilentGet("topic")
+	if exists {
+		t.Fatalf("Expected %v to have been deleted but was found in the database", "topic")
+	}
+}
+
+func TestDeleteAndDoAGet(t *testing.T) {
+	config := NewConfig(".", 32, 16)
+	db, _ := NewDB[serializableKey](config)
+	defer db.ClearLog()
+
+	_ = db.Put("topic", []byte("microservices"))
+	_ = db.Delete("topic")
+
+	_, err := db.Get("topic")
+	if err == nil {
+		t.Fatalf("Expected %v to have been deleted but was found in the database", "topic")
 	}
 }

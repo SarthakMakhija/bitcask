@@ -42,6 +42,14 @@ func (db *DB[Key]) Update(key Key, value []byte) error {
 	return nil
 }
 
+func (db *DB[Key]) Delete(key Key) error {
+	if _, err := db.segments.AppendDeleted(key); err != nil {
+		return err
+	}
+	db.keyDirectory.Delete(key)
+	return nil
+}
+
 func (db *DB[Key]) SilentGet(key Key) ([]byte, bool) {
 	entry, ok := db.keyDirectory.Get(key)
 	if ok {

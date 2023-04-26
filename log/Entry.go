@@ -27,6 +27,13 @@ func NewEntry[Key key.Serializable](key Key, value []byte) *Entry[Key] {
 	}
 }
 
+func NewDeletedEntry[Key key.Serializable](key Key, value []byte) *Entry[Key] {
+	return &Entry[Key]{
+		key:   key,
+		value: valueReference{value: value, tombstone: 1},
+	}
+}
+
 func (entry *Entry[Key]) encode() []byte {
 	serializedKey := entry.key.Serialize()
 	keySize, valueSize := uint32(len(serializedKey)), uint32(len(entry.value.value))+tombstoneMarkerSize
@@ -47,7 +54,7 @@ func (entry *Entry[Key]) encode() []byte {
 	return encoded
 }
 
-func decode(content []byte) ([]byte, []byte) {
+func decode(content []byte) ([]byte, []byte, bool) {
 	var offset uint32 = 0
 	keySize := littleEndian.Uint32(content[offset:reservedKeySize])
 	offset = offset + reservedKeySize
@@ -58,6 +65,7 @@ func decode(content []byte) ([]byte, []byte) {
 	serializedKey := content[offset : offset+keySize]
 	offset = offset + keySize
 
-	value := content[offset : offset+valueSize-tombstoneMarkerSize]
-	return serializedKey, value
+	value := content[offset : offset+valueSize]
+	valueLength := len(value)
+	return serializedKey, value[:valueLength-1], value[valueLength-1]&0x01 == 0x01
 }

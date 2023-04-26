@@ -8,8 +8,9 @@ import (
 )
 
 type StoredEntry struct {
-	Key   []byte
-	Value []byte
+	Key     []byte
+	Value   []byte
+	Deleted bool
 }
 
 type AppendEntryResponse struct {
@@ -60,8 +61,8 @@ func (segment *Segment[Key]) Read(offset int64, size uint64) (*StoredEntry, erro
 	if err != nil {
 		return nil, err
 	}
-	decodedKey, value := decode(bytes)
-	return &StoredEntry{Key: decodedKey, Value: value}, nil
+	decodedKey, value, deleted := decode(bytes)
+	return &StoredEntry{Key: decodedKey, Value: value, Deleted: deleted}, nil
 }
 
 func (segment *Segment[Key]) sizeInBytes() int64 {

@@ -19,6 +19,9 @@ func TestNewSegmentWithAnEntry(t *testing.T) {
 	if string(storedEntry.Value) != "microservices" {
 		t.Fatalf("Expected value to be %v, received %v", "microservices", string(storedEntry.Value))
 	}
+	if storedEntry.Deleted {
+		t.Fatalf("Expected key to not be deleted, but was deleted")
+	}
 }
 
 func TestNewSegmentWithAnEntryAndPerformSync(t *testing.T) {
@@ -71,5 +74,25 @@ func TestNewSegmentWith2EntriesAndValidateOffset(t *testing.T) {
 	}
 	if appendEntryResponseDisk.Offset != int64(appendEntryResponseTopic.EntryLength) {
 		t.Fatalf("Expected another offset to be %v, received %v", appendEntryResponseTopic.EntryLength, appendEntryResponseDisk.Offset)
+	}
+}
+
+func TestNewSegmentWithADeletedEntry(t *testing.T) {
+	segment, _ := NewSegment[serializableKey](1, ".")
+	defer func() {
+		segment.remove()
+	}()
+
+	appendEntryResponse, _ := segment.Append(NewDeletedEntry[serializableKey]("topic", []byte("microservices")))
+
+	storedEntry, _ := segment.Read(appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
+	if string(storedEntry.Key) != "topic" {
+		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
+	}
+	if string(storedEntry.Value) != "microservices" {
+		t.Fatalf("Expected value to be %v, received %v", "microservices", string(storedEntry.Value))
+	}
+	if !storedEntry.Deleted {
+		t.Fatalf("Expected key to be deleted, but was not")
 	}
 }

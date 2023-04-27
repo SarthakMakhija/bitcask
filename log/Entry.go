@@ -8,7 +8,7 @@ import (
 )
 
 var reservedKeySize, reservedValueSize = uint32(unsafe.Sizeof(uint32(0))), uint32(unsafe.Sizeof(uint32(0)))
-var reservedTimestampSize = uint32(unsafe.Sizeof(uint64(0)))
+var reservedTimestampSize = uint32(unsafe.Sizeof(uint32(0)))
 var littleEndian = binary.LittleEndian
 var tombstoneMarkerSize = uint32(unsafe.Sizeof(byte(0)))
 
@@ -46,7 +46,7 @@ func (entry *Entry[Key]) encode() []byte {
 	encoded := make([]byte, reservedTimestampSize+reservedKeySize+reservedValueSize+keySize+valueSize)
 	var offset uint32 = 0
 
-	littleEndian.PutUint64(encoded, uint64(entry.clock.Now()))
+	littleEndian.PutUint32(encoded, uint32(entry.clock.Now()))
 	offset = offset + reservedTimestampSize
 
 	littleEndian.PutUint32(encoded[offset:], keySize)
@@ -65,7 +65,7 @@ func (entry *Entry[Key]) encode() []byte {
 func decode(content []byte) ([]byte, []byte, bool) {
 	var offset uint32 = 0
 
-	_ = littleEndian.Uint64(content)
+	_ = littleEndian.Uint32(content)
 	offset = offset + reservedTimestampSize
 
 	keySize := littleEndian.Uint32(content[offset:])

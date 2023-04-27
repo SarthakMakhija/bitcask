@@ -7,23 +7,29 @@ import (
 )
 
 type Store struct {
-	file          *os.File
+	writer        *os.File
+	reader        *os.File
 	currentOffset int64
 }
 
 func NewStore(filePath string) (*Store, error) {
-	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_APPEND, 0644)
+	writer, err := os.OpenFile(filePath, os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		return nil, err
+	}
+	reader, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
 	return &Store{
-		file:          file,
+		writer:        writer,
+		reader:        reader,
 		currentOffset: 0,
 	}, nil
 }
 
 func (store *Store) append(bytes []byte) (int64, error) {
-	bytesWritten, err := store.file.Write(bytes)
+	bytesWritten, err := store.writer.Write(bytes)
 	offset := store.currentOffset
 	if err != nil {
 		return -1, err
@@ -36,13 +42,13 @@ func (store *Store) append(bytes []byte) (int64, error) {
 }
 
 func (store *Store) read(offset int64, size uint64) ([]byte, error) {
-	_, err := store.file.Seek(offset, 0)
+	_, err := store.reader.Seek(offset, 0)
 	if err != nil {
 		return nil, err
 	}
 	bytes := make([]byte, size)
 
-	_, err = store.file.Read(bytes)
+	_, err = store.reader.Read(bytes)
 	if err != nil {
 		return nil, err
 	}
@@ -54,9 +60,9 @@ func (store *Store) sizeInBytes() int64 {
 }
 
 func (store *Store) sync() {
-	store.file.Sync()
+	store.writer.Sync()
 }
 
 func (store *Store) remove() {
-	_ = os.RemoveAll(store.file.Name())
+	_ = os.RemoveAll(store.writer.Name())
 }

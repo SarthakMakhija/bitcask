@@ -42,7 +42,7 @@ func TestReadAnInactiveSegmentWith(t *testing.T) {
 	}
 }
 
-func TestReadInvalidSegment(t *testing.T) {
+func TestAttemptsToReadInvalidSegment(t *testing.T) {
 	segments, _ := NewSegments[serializableKey](".", 100, clock.NewSystemClock())
 	defer func() {
 		segments.RemoveActive()
@@ -70,5 +70,57 @@ func TestReadASegmentWithADeletedEntry(t *testing.T) {
 	}
 	if !storedEntry.Deleted {
 		t.Fatalf("Expected key to be deleted, but was not")
+	}
+}
+
+func TestAttemptsToReadAnActiveSegmentFull(t *testing.T) {
+	segments, _ := NewSegments[serializableKey](".", 32, clock.NewSystemClock())
+	defer func() {
+		segments.RemoveActive()
+		segments.RemoveAllInactive()
+	}()
+
+	_, _ = segments.Append("topic", []byte("microservices"))
+	_, err := segments.ReadFull(segments.activeSegment.fileId)
+
+	if err == nil {
+		t.Fatalf("Expected an error while attempting to read the active segment full")
+	}
+}
+
+func TestReadsAnActiveSegmentFull(t *testing.T) {
+	segments, _ := NewSegments[serializableKey](".", 16, clock.NewSystemClock())
+	defer func() {
+		segments.RemoveActive()
+		segments.RemoveAllInactive()
+	}()
+
+	_, _ = segments.Append("topic", []byte("microservices"))
+	_, _ = segments.Append("diskType", []byte("solid state drive"))
+
+	entries, _ := segments.ReadFull(1)
+
+	if len(entries) != 1 {
+		t.Fatalf("Expected length of entries to be 1, received %v", len(entries))
+	}
+	if string(entries[0].Key) != "topic" {
+		t.Fatalf("Expected key to be %v, received %v", "topic", string(entries[0].Key))
+	}
+	if string(entries[0].Value) != "microservices" {
+		t.Fatalf("Expected value to be %v, received %v", "microservices", string(entries[0].Value))
+	}
+}
+
+func TestAttemptsToReadInvalidSegmentFull(t *testing.T) {
+	segments, _ := NewSegments[serializableKey](".", 100, clock.NewSystemClock())
+	defer func() {
+		segments.RemoveActive()
+	}()
+
+	_, _ = segments.Append("topic", []byte("microservices"))
+
+	_, err := segments.ReadFull(10)
+	if err == nil {
+		t.Fatalf("Expected an error while reading a segment with an invalid file id but received none")
 	}
 }

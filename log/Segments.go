@@ -60,6 +60,17 @@ func (segments *Segments[Key]) Read(fileId uint64, offset int64, size uint64) (*
 	return nil, errors.New(fmt.Sprintf("Invalid file id %v", fileId))
 }
 
+func (segments *Segments[Key]) ReadFull(fileId uint64) ([]*StoredEntry, error) {
+	if fileId == segments.activeSegment.fileId {
+		return nil, errors.New(fmt.Sprintf("Can not read active segment with file id %v fully", fileId))
+	}
+	segment, ok := segments.inactiveSegments[fileId]
+	if ok {
+		return segment.readFull()
+	}
+	return nil, errors.New(fmt.Sprintf("Invalid file id %v", fileId))
+}
+
 func (segments *Segments[Key]) RemoveActive() {
 	segments.activeSegment.remove()
 }

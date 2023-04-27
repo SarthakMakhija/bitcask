@@ -99,3 +99,25 @@ func TestAppendsMultipleEntriesToTheStoreAndValidatesSize(t *testing.T) {
 		t.Fatalf("Expected store sizeInBytes to be %v, received %v", len(contentAppendOnly)+len(contentStorage), store.sizeInBytes())
 	}
 }
+
+func TestReadsTheCompleteFile(t *testing.T) {
+	file, _ := os.CreateTemp(".", "append_only")
+	store, _ := NewStore(file.Name())
+	defer func() {
+		_ = os.RemoveAll(file.Name())
+	}()
+
+	contentAppendOnly := "append-only-log"
+	contentStorage := "storage"
+
+	_, _ = store.append([]byte(contentAppendOnly))
+	_, _ = store.append([]byte(contentStorage))
+
+	contents, _ := store.readFull()
+	if string(contents[:len(contentAppendOnly)]) != contentAppendOnly {
+		t.Fatalf("Expected content initial part to be %v, received %v", contentAppendOnly, string(contents[:len(contentAppendOnly)]))
+	}
+	if string(contents[len(contentAppendOnly):]) != contentStorage {
+		t.Fatalf("Expected the remaining part to be %v, received %v", contentStorage, string(contents[len(contentAppendOnly):]))
+	}
+}

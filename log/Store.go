@@ -55,6 +55,10 @@ func (store *Store) read(offset int64, size uint64) ([]byte, error) {
 	return bytes, nil
 }
 
+func (store *Store) readFull() ([]byte, error) {
+	return os.ReadFile(store.reader.Name())
+}
+
 func (store *Store) sizeInBytes() int64 {
 	return store.currentOffset
 }

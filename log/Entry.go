@@ -62,7 +62,7 @@ func (entry *Entry[Key]) encode() []byte {
 	return encoded
 }
 
-func decode(content []byte) ([]byte, []byte, bool) {
+func decode(content []byte) *StoredEntry {
 	var offset uint32 = 0
 
 	_ = littleEndian.Uint32(content)
@@ -79,5 +79,5 @@ func decode(content []byte) ([]byte, []byte, bool) {
 
 	value := content[offset : offset+valueSize]
 	valueLength := len(value)
-	return serializedKey, value[:valueLength-1], value[valueLength-1]&0x01 == 0x01
+	return &StoredEntry{Key: serializedKey, Value: value[:valueLength-1], Deleted: value[valueLength-1]&0x01 == 0x01}
 }

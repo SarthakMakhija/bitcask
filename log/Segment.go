@@ -61,8 +61,8 @@ func (segment *Segment[Key]) Read(offset int64, size uint64) (*StoredEntry, erro
 	if err != nil {
 		return nil, err
 	}
-	decodedKey, value, deleted := decode(bytes)
-	return &StoredEntry{Key: decodedKey, Value: value, Deleted: deleted}, nil
+	storedEntry := decode(bytes)
+	return storedEntry, nil
 }
 
 func (segment *Segment[Key]) sizeInBytes() int64 {

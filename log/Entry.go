@@ -2,7 +2,7 @@ package log
 
 import (
 	"bitcask/clock"
-	"bitcask/key"
+	"bitcask/config"
 	"encoding/binary"
 	"unsafe"
 )
@@ -17,13 +17,13 @@ type valueReference struct {
 	tombstone byte
 }
 
-type Entry[Key key.Serializable] struct {
+type Entry[Key config.Serializable] struct {
 	key   Key
 	value valueReference
 	clock clock.Clock
 }
 
-func NewEntry[Key key.Serializable](key Key, value []byte, clock clock.Clock) *Entry[Key] {
+func NewEntry[Key config.Serializable](key Key, value []byte, clock clock.Clock) *Entry[Key] {
 	return &Entry[Key]{
 		key:   key,
 		value: valueReference{value: value, tombstone: 0},
@@ -31,7 +31,7 @@ func NewEntry[Key key.Serializable](key Key, value []byte, clock clock.Clock) *E
 	}
 }
 
-func NewDeletedEntry[Key key.Serializable](key Key, clock clock.Clock) *Entry[Key] {
+func NewDeletedEntry[Key config.Serializable](key Key, clock clock.Clock) *Entry[Key] {
 	return &Entry[Key]{
 		key:   key,
 		value: valueReference{value: []byte{}, tombstone: 1},
@@ -68,7 +68,7 @@ func decode(content []byte) *StoredEntry {
 	return storedEntry
 }
 
-func decodeMulti[Key key.BitCaskKey](content []byte, keyMapper func([]byte) Key) []*MappedStoredEntry[Key] {
+func decodeMulti[Key config.BitCaskKey](content []byte, keyMapper func([]byte) Key) []*MappedStoredEntry[Key] {
 	contentLength := uint32(len(content))
 	var offset uint32 = 0
 

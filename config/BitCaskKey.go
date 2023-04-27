@@ -1,4 +1,4 @@
-package key
+package config
 
 type Serializable interface {
 	Serialize() []byte

@@ -1,7 +1,7 @@
 package bitcask
 
 import (
-	"bitcask/kv"
+	"bitcask/config"
 	"reflect"
 	"testing"
 )
@@ -13,7 +13,7 @@ func (key serializableKey) Serialize() []byte {
 }
 
 func TestPutAndDoASilentGet(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
+	config := config.NewConfig(".", 32, 16)
 	db, _ := NewDB[serializableKey](config)
 	defer db.ClearLog()
 
@@ -27,7 +27,7 @@ func TestPutAndDoASilentGet(t *testing.T) {
 }
 
 func TestSilentGetANonExistentKey(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
+	config := config.NewConfig(".", 32, 16)
 	db, _ := NewDB[serializableKey](config)
 	defer db.ClearLog()
 
@@ -39,7 +39,7 @@ func TestSilentGetANonExistentKey(t *testing.T) {
 }
 
 func TestPutAndDoAGet(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
+	config := config.NewConfig(".", 32, 16)
 	db, _ := NewDB[serializableKey](config)
 	defer db.ClearLog()
 
@@ -53,7 +53,7 @@ func TestPutAndDoAGet(t *testing.T) {
 }
 
 func TestGetANonExistentKey(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
+	config := config.NewConfig(".", 32, 16)
 	db, _ := NewDB[serializableKey](config)
 	defer db.ClearLog()
 
@@ -65,7 +65,7 @@ func TestGetANonExistentKey(t *testing.T) {
 }
 
 func TestUpdateAndDoASilentGet(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
+	config := config.NewConfig(".", 32, 16)
 	db, _ := NewDB[serializableKey](config)
 	defer db.ClearLog()
 
@@ -80,7 +80,7 @@ func TestUpdateAndDoASilentGet(t *testing.T) {
 }
 
 func TestUpdateAndDoAGet(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
+	config := config.NewConfig(".", 32, 16)
 	db, _ := NewDB[serializableKey](config)
 	defer db.ClearLog()
 
@@ -95,7 +95,7 @@ func TestUpdateAndDoAGet(t *testing.T) {
 }
 
 func TestDeleteAndDoASilentGet(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
+	config := config.NewConfig(".", 32, 16)
 	db, _ := NewDB[serializableKey](config)
 	defer db.ClearLog()
 
@@ -109,7 +109,7 @@ func TestDeleteAndDoASilentGet(t *testing.T) {
 }
 
 func TestDeleteAndDoAGet(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
+	config := config.NewConfig(".", 32, 16)
 	db, _ := NewDB[serializableKey](config)
 	defer db.ClearLog()
 

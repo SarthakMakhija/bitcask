@@ -2,13 +2,13 @@ package log
 
 import (
 	"bitcask/clock"
-	"bitcask/key"
+	"bitcask/config"
 	"bitcask/log/id"
 	"errors"
 	"fmt"
 )
 
-type Segments[Key key.BitCaskKey] struct {
+type Segments[Key config.BitCaskKey] struct {
 	activeSegment       *Segment[Key]
 	inactiveSegments    map[uint64]*Segment[Key]
 	fileIdGenerator     *id.FileIdGenerator
@@ -17,7 +17,7 @@ type Segments[Key key.BitCaskKey] struct {
 	directory           string
 }
 
-func NewSegments[Key key.BitCaskKey](directory string, maxSegmentSizeBytes uint64, clock clock.Clock) (*Segments[Key], error) {
+func NewSegments[Key config.BitCaskKey](directory string, maxSegmentSizeBytes uint64, clock clock.Clock) (*Segments[Key], error) {
 	fileIdGenerator := id.NewFileIdGenerator()
 	fileId := fileIdGenerator.Next()
 	segment, err := NewSegment[Key](fileId, directory)

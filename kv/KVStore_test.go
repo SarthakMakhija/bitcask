@@ -1,6 +1,7 @@
 package kv
 
 import (
+	config2 "bitcask/config"
 	"reflect"
 	"testing"
 )
@@ -12,7 +13,7 @@ func (key serializableKey) Serialize() []byte {
 }
 
 func TestPutAndDoASilentGet(t *testing.T) {
-	config := NewConfig(".", 32, 16)
+	config := config2.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -26,7 +27,7 @@ func TestPutAndDoASilentGet(t *testing.T) {
 }
 
 func TestSilentGetANonExistentKey(t *testing.T) {
-	config := NewConfig(".", 32, 16)
+	config := config2.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -38,7 +39,7 @@ func TestSilentGetANonExistentKey(t *testing.T) {
 }
 
 func TestPutAndDoAGet(t *testing.T) {
-	config := NewConfig(".", 32, 16)
+	config := config2.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -52,7 +53,7 @@ func TestPutAndDoAGet(t *testing.T) {
 }
 
 func TestGetANonExistentKey(t *testing.T) {
-	config := NewConfig(".", 32, 16)
+	config := config2.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -64,7 +65,7 @@ func TestGetANonExistentKey(t *testing.T) {
 }
 
 func TestUpdateAndDoASilentGet(t *testing.T) {
-	config := NewConfig(".", 32, 16)
+	config := config2.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -79,7 +80,7 @@ func TestUpdateAndDoASilentGet(t *testing.T) {
 }
 
 func TestUpdateAndDoAGet(t *testing.T) {
-	config := NewConfig(".", 32, 16)
+	config := config2.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -94,7 +95,7 @@ func TestUpdateAndDoAGet(t *testing.T) {
 }
 
 func TestDeleteAndDoASilentGet(t *testing.T) {
-	config := NewConfig(".", 32, 16)
+	config := config2.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -108,7 +109,7 @@ func TestDeleteAndDoASilentGet(t *testing.T) {
 }
 
 func TestDeleteAndDoAGet(t *testing.T) {
-	config := NewConfig(".", 32, 16)
+	config := config2.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -122,7 +123,7 @@ func TestDeleteAndDoAGet(t *testing.T) {
 }
 
 func TestReadsAPairOfInactiveSegments(t *testing.T) {
-	config := NewConfig(".", 8, 16)
+	config := config2.NewConfig(".", 8, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 

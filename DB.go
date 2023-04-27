@@ -1,15 +1,15 @@
 package bitcask
 
 import (
-	"bitcask/key"
+	"bitcask/config"
 	"bitcask/kv"
 )
 
-type DB[Key key.BitCaskKey] struct {
+type DB[Key config.BitCaskKey] struct {
 	kvStore *kv.KVStore[Key]
 }
 
-func NewDB[Key key.BitCaskKey](config *kv.Config) (*DB[Key], error) {
+func NewDB[Key config.BitCaskKey](config *config.Config) (*DB[Key], error) {
 	kvStore, err := kv.NewKVStore[Key](config)
 	if err != nil {
 		return nil, err

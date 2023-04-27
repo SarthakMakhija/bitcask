@@ -1,7 +1,7 @@
 package log
 
 import (
-	"bitcask/key"
+	"bitcask/config"
 	"fmt"
 	"os"
 	"path"
@@ -13,7 +13,7 @@ type StoredEntry struct {
 	Deleted bool
 }
 
-type MappedStoredEntry[K key.BitCaskKey] struct {
+type MappedStoredEntry[K config.BitCaskKey] struct {
 	Key     K
 	Value   []byte
 	Deleted bool
@@ -25,7 +25,7 @@ type AppendEntryResponse struct {
 	EntryLength int
 }
 
-type Segment[Key key.BitCaskKey] struct {
+type Segment[Key config.BitCaskKey] struct {
 	fileId   uint64
 	filePath string
 	store    *Store
@@ -33,7 +33,7 @@ type Segment[Key key.BitCaskKey] struct {
 
 const segmentFilePrefix = "bitcask"
 
-func NewSegment[Key key.BitCaskKey](fileId uint64, directory string) (*Segment[Key], error) {
+func NewSegment[Key config.BitCaskKey](fileId uint64, directory string) (*Segment[Key], error) {
 	filePath, err := createSegment(fileId, directory)
 	if err != nil {
 		return nil, err

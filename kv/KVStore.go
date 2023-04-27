@@ -1,19 +1,19 @@
 package kv
 
 import (
-	"bitcask/key"
+	"bitcask/config"
 	"bitcask/keydir"
 	"bitcask/log"
 	"errors"
 	"fmt"
 )
 
-type KVStore[Key key.BitCaskKey] struct {
+type KVStore[Key config.BitCaskKey] struct {
 	segments     *log.Segments[Key]
 	keyDirectory *keydir.KeyDirectory[Key]
 }
 
-func NewKVStore[Key key.BitCaskKey](config *Config) (*KVStore[Key], error) {
+func NewKVStore[Key config.BitCaskKey](config *config.Config) (*KVStore[Key], error) {
 	segments, err := log.NewSegments[Key](config.Directory(), config.MaxSegmentSizeInBytes(), config.Clock())
 	if err != nil {
 		return nil, err

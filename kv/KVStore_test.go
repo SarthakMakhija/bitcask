@@ -1,7 +1,6 @@
-package bitcask
+package kv
 
 import (
-	"bitcask/kv"
 	"reflect"
 	"testing"
 )
@@ -13,8 +12,8 @@ func (key serializableKey) Serialize() []byte {
 }
 
 func TestPutAndDoASilentGet(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
+	config := NewConfig(".", 32, 16)
+	db, _ := NewKVStore[serializableKey](config)
 	defer db.ClearLog()
 
 	_ = db.Put("topic", []byte("microservices"))
@@ -27,8 +26,8 @@ func TestPutAndDoASilentGet(t *testing.T) {
 }
 
 func TestSilentGetANonExistentKey(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
+	config := NewConfig(".", 32, 16)
+	db, _ := NewKVStore[serializableKey](config)
 	defer db.ClearLog()
 
 	_, exists := db.SilentGet("non-existing")
@@ -39,8 +38,8 @@ func TestSilentGetANonExistentKey(t *testing.T) {
 }
 
 func TestPutAndDoAGet(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
+	config := NewConfig(".", 32, 16)
+	db, _ := NewKVStore[serializableKey](config)
 	defer db.ClearLog()
 
 	_ = db.Put("topic", []byte("microservices"))
@@ -53,8 +52,8 @@ func TestPutAndDoAGet(t *testing.T) {
 }
 
 func TestGetANonExistentKey(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
+	config := NewConfig(".", 32, 16)
+	db, _ := NewKVStore[serializableKey](config)
 	defer db.ClearLog()
 
 	value, err := db.Get("non-existing")
@@ -65,8 +64,8 @@ func TestGetANonExistentKey(t *testing.T) {
 }
 
 func TestUpdateAndDoASilentGet(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
+	config := NewConfig(".", 32, 16)
+	db, _ := NewKVStore[serializableKey](config)
 	defer db.ClearLog()
 
 	_ = db.Put("topic", []byte("microservices"))
@@ -80,8 +79,8 @@ func TestUpdateAndDoASilentGet(t *testing.T) {
 }
 
 func TestUpdateAndDoAGet(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
+	config := NewConfig(".", 32, 16)
+	db, _ := NewKVStore[serializableKey](config)
 	defer db.ClearLog()
 
 	_ = db.Put("topic", []byte("microservices"))
@@ -95,8 +94,8 @@ func TestUpdateAndDoAGet(t *testing.T) {
 }
 
 func TestDeleteAndDoASilentGet(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
+	config := NewConfig(".", 32, 16)
+	db, _ := NewKVStore[serializableKey](config)
 	defer db.ClearLog()
 
 	_ = db.Put("topic", []byte("microservices"))
@@ -109,8 +108,8 @@ func TestDeleteAndDoASilentGet(t *testing.T) {
 }
 
 func TestDeleteAndDoAGet(t *testing.T) {
-	config := kv.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
+	config := NewConfig(".", 32, 16)
+	db, _ := NewKVStore[serializableKey](config)
 	defer db.ClearLog()
 
 	_ = db.Put("topic", []byte("microservices"))

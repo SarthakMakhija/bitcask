@@ -1,4 +1,4 @@
-package bitcask
+package kv
 
 import "bitcask/clock"
 

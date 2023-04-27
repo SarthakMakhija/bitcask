@@ -73,49 +73,7 @@ func TestReadASegmentWithADeletedEntry(t *testing.T) {
 	}
 }
 
-func TestAttemptsToReadAnActiveSegmentFull(t *testing.T) {
-	segments, _ := NewSegments[serializableKey](".", 32, clock.NewSystemClock())
-	defer func() {
-		segments.RemoveActive()
-		segments.RemoveAllInactive()
-	}()
-
-	_, _ = segments.Append("topic", []byte("microservices"))
-	_, err := segments.ReadFull(segments.activeSegment.fileId, func(key []byte) serializableKey {
-		return serializableKey(key)
-	})
-
-	if err == nil {
-		t.Fatalf("Expected an error while attempting to read the active segment full")
-	}
-}
-
-func TestReadsAnInActiveSegmentFull(t *testing.T) {
-	segments, _ := NewSegments[serializableKey](".", 16, clock.NewSystemClock())
-	defer func() {
-		segments.RemoveActive()
-		segments.RemoveAllInactive()
-	}()
-
-	_, _ = segments.Append("topic", []byte("microservices"))
-	_, _ = segments.Append("diskType", []byte("solid state drive"))
-
-	entries, _ := segments.ReadFull(1, func(key []byte) serializableKey {
-		return serializableKey(key)
-	})
-
-	if len(entries) != 1 {
-		t.Fatalf("Expected length of entries to be 1, received %v", len(entries))
-	}
-	if entries[0].Key != "topic" {
-		t.Fatalf("Expected key to be %v, received %v", "topic", entries[0].Key)
-	}
-	if string(entries[0].Value) != "microservices" {
-		t.Fatalf("Expected value to be %v, received %v", "microservices", string(entries[0].Value))
-	}
-}
-
-func TestAttemptsToReadInvalidSegmentFull(t *testing.T) {
+func TestAttemptsToReadAPairOfInactiveSegmentsWhenInActiveSegmentsAreLessThan2(t *testing.T) {
 	segments, _ := NewSegments[serializableKey](".", 100, clock.NewSystemClock())
 	defer func() {
 		segments.RemoveActive()
@@ -123,10 +81,36 @@ func TestAttemptsToReadInvalidSegmentFull(t *testing.T) {
 
 	_, _ = segments.Append("topic", []byte("microservices"))
 
-	_, err := segments.ReadFull(10, func(key []byte) serializableKey {
+	_, err := segments.ReadPairOfInactiveSegment(func(key []byte) serializableKey {
 		return serializableKey(key)
 	})
 	if err == nil {
-		t.Fatalf("Expected an error while reading a segment with an invalid file id but received none")
+		t.Fatalf("Expected an error while reading a pair of inactive segments when the count of inactive segments was less than 2")
+	}
+}
+
+func TestReadsAPairOfInactiveSegmentsFull(t *testing.T) {
+	segments, _ := NewSegments[serializableKey](".", 8, clock.NewSystemClock())
+	defer func() {
+		segments.RemoveActive()
+		segments.RemoveAllInactive()
+	}()
+
+	_, _ = segments.Append("topic", []byte("microservices"))
+	_, _ = segments.Append("diskType", []byte("solid state drive"))
+	_, _ = segments.Append("engine", []byte("bitcask"))
+
+	pair, _ := segments.ReadPairOfInactiveSegment(func(key []byte) serializableKey {
+		return serializableKey(key)
+	})
+
+	entries := pair[0]
+	if entries[0].Key != "topic" && entries[0].Key != "diskType" {
+		t.Fatalf("Expected key to be either of %v | %v, received %v", "topic", "diskType", entries[0].Key)
+	}
+
+	otherEntries := pair[1]
+	if otherEntries[0].Key != "topic" && otherEntries[0].Key != "diskType" {
+		t.Fatalf("Expected other key to be either of %v | %v, received %v", "topic", "diskType", entries[0].Key)
 	}
 }

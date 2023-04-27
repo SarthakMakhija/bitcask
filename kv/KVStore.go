@@ -74,6 +74,10 @@ func (kv *KVStore[Key]) Get(key Key) ([]byte, error) {
 	return nil, errors.New(fmt.Sprintf("Key %v does not exist", key))
 }
 
+func (kv *KVStore[Key]) ReadPairOfInactiveSegment(keyMapper func([]byte) Key) ([][]*log.MappedStoredEntry[Key], error) {
+	return kv.segments.ReadPairOfInactiveSegment(keyMapper)
+}
+
 func (kv *KVStore[Key]) ClearLog() {
 	kv.segments.RemoveActive()
 	kv.segments.RemoveAllInactive()

@@ -65,6 +65,15 @@ func (segment *Segment[Key]) Read(offset int64, size uint64) (*StoredEntry, erro
 	return storedEntry, nil
 }
 
+func (segment *Segment[Key]) readFull() ([]*StoredEntry, error) {
+	bytes, err := segment.store.readFull()
+	if err != nil {
+		return nil, err
+	}
+	storedEntries := decodeMulti(bytes)
+	return storedEntries, nil
+}
+
 func (segment *Segment[Key]) sizeInBytes() int64 {
 	return segment.store.sizeInBytes()
 }

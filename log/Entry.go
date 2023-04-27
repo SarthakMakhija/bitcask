@@ -64,7 +64,24 @@ func (entry *Entry[Key]) encode() []byte {
 
 func decode(content []byte) *StoredEntry {
 	var offset uint32 = 0
+	storedEntry, _ := decodeFrom(content, offset)
+	return storedEntry
+}
 
+func decodeMulti(content []byte) []*StoredEntry {
+	contentLength := uint32(len(content))
+	var offset uint32 = 0
+
+	var entries []*StoredEntry
+	for offset < contentLength {
+		entry, traversedOffset := decodeFrom(content, offset)
+		entries = append(entries, entry)
+		offset = traversedOffset
+	}
+	return entries
+}
+
+func decodeFrom(content []byte, offset uint32) (*StoredEntry, uint32) {
 	_ = littleEndian.Uint32(content)
 	offset = offset + reservedTimestampSize
 
@@ -78,6 +95,12 @@ func decode(content []byte) *StoredEntry {
 	offset = offset + keySize
 
 	value := content[offset : offset+valueSize]
+	offset = offset + valueSize
+
 	valueLength := len(value)
-	return &StoredEntry{Key: serializedKey, Value: value[:valueLength-1], Deleted: value[valueLength-1]&0x01 == 0x01}
+	return &StoredEntry{
+		Key:     serializedKey,
+		Value:   value[:valueLength-1],
+		Deleted: value[valueLength-1]&0x01 == 0x01,
+	}, offset
 }

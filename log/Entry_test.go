@@ -52,25 +52,27 @@ func TestDecodesMultipleKeyValuePairs(t *testing.T) {
 
 	multipleEntries := append(append(encodedTopic, encodedDisk...), encodedEngine...)
 
-	storedEntries := decodeMulti(multipleEntries)
-	if string(storedEntries[0].Key) != "topic" {
-		t.Fatalf("Expected decoded key to be %v, received %v", "topic", string(storedEntries[0].Key))
+	entries := decodeMulti(multipleEntries, func(key []byte) serializableKey {
+		return serializableKey(key)
+	})
+	if entries[0].Key != "topic" {
+		t.Fatalf("Expected decoded key to be %v, received %v", "topic", entries[0].Key)
 	}
-	if string(storedEntries[0].Value) != "microservices" {
-		t.Fatalf("Expected decoded value to be %v, received %v", "microservices", string(storedEntries[0].Value))
-	}
-
-	if string(storedEntries[1].Key) != "disk" {
-		t.Fatalf("Expected decoded key to be %v, received %v", "disk", string(storedEntries[1].Key))
-	}
-	if string(storedEntries[1].Value) != "ssd" {
-		t.Fatalf("Expected decoded value to be %v, received %v", "ssd", string(storedEntries[1].Value))
+	if string(entries[0].Value) != "microservices" {
+		t.Fatalf("Expected decoded value to be %v, received %v", "microservices", string(entries[0].Value))
 	}
 
-	if string(storedEntries[2].Key) != "engine" {
-		t.Fatalf("Expected decoded key to be %v, received %v", "engine", string(storedEntries[2].Key))
+	if entries[1].Key != "disk" {
+		t.Fatalf("Expected decoded key to be %v, received %v", "disk", entries[1].Key)
 	}
-	if string(storedEntries[2].Value) != "bitcask" {
-		t.Fatalf("Expected decoded value to be %v, received %v", "bitcask", string(storedEntries[2].Value))
+	if string(entries[1].Value) != "ssd" {
+		t.Fatalf("Expected decoded value to be %v, received %v", "ssd", string(entries[1].Value))
+	}
+
+	if entries[2].Key != "engine" {
+		t.Fatalf("Expected decoded key to be %v, received %v", "engine", entries[2].Key)
+	}
+	if string(entries[2].Value) != "bitcask" {
+		t.Fatalf("Expected decoded value to be %v, received %v", "bitcask", string(entries[2].Value))
 	}
 }

@@ -68,14 +68,18 @@ func decode(content []byte) *StoredEntry {
 	return storedEntry
 }
 
-func decodeMulti(content []byte) []*StoredEntry {
+func decodeMulti[Key key.BitCaskKey](content []byte, keyMapper func([]byte) Key) []*MappedStoredEntry[Key] {
 	contentLength := uint32(len(content))
 	var offset uint32 = 0
 
-	var entries []*StoredEntry
+	var entries []*MappedStoredEntry[Key]
 	for offset < contentLength {
 		entry, traversedOffset := decodeFrom(content, offset)
-		entries = append(entries, entry)
+		entries = append(entries, &MappedStoredEntry[Key]{
+			Key:     keyMapper(entry.Key),
+			Value:   entry.Value,
+			Deleted: entry.Deleted,
+		})
 		offset = traversedOffset
 	}
 	return entries

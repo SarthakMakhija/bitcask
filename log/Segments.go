@@ -8,7 +8,7 @@ import (
 	"fmt"
 )
 
-type Segments[Key key.Serializable] struct {
+type Segments[Key key.BitCaskKey] struct {
 	activeSegment       *Segment[Key]
 	inactiveSegments    map[uint64]*Segment[Key]
 	fileIdGenerator     *id.FileIdGenerator
@@ -17,7 +17,7 @@ type Segments[Key key.Serializable] struct {
 	directory           string
 }
 
-func NewSegments[Key key.Serializable](directory string, maxSegmentSizeBytes uint64, clock clock.Clock) (*Segments[Key], error) {
+func NewSegments[Key key.BitCaskKey](directory string, maxSegmentSizeBytes uint64, clock clock.Clock) (*Segments[Key], error) {
 	fileIdGenerator := id.NewFileIdGenerator()
 	fileId := fileIdGenerator.Next()
 	segment, err := NewSegment[Key](fileId, directory)
@@ -60,13 +60,13 @@ func (segments *Segments[Key]) Read(fileId uint64, offset int64, size uint64) (*
 	return nil, errors.New(fmt.Sprintf("Invalid file id %v", fileId))
 }
 
-func (segments *Segments[Key]) ReadFull(fileId uint64) ([]*StoredEntry, error) {
+func (segments *Segments[Key]) ReadFull(fileId uint64, keyMapper func([]byte) Key) ([]*MappedStoredEntry[Key], error) {
 	if fileId == segments.activeSegment.fileId {
 		return nil, errors.New(fmt.Sprintf("Can not read active segment with file id %v fully", fileId))
 	}
 	segment, ok := segments.inactiveSegments[fileId]
 	if ok {
-		return segment.readFull()
+		return segment.readFull(keyMapper)
 	}
 	return nil, errors.New(fmt.Sprintf("Invalid file id %v", fileId))
 }

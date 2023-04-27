@@ -104,16 +104,19 @@ func TestNewSegmentByReadingFull(t *testing.T) {
 	_, _ = segment.append(NewEntry[serializableKey]("topic", []byte("microservices"), clock.NewSystemClock()))
 	_, _ = segment.append(NewEntry[serializableKey]("disk", []byte("ssd"), clock.NewSystemClock()))
 
-	entries, _ := segment.readFull()
-	if string(entries[0].Key) != "topic" {
-		t.Fatalf("Expected key to be %v, received %v", "topic", string(entries[0].Key))
+	entries, _ := segment.readFull(func(key []byte) serializableKey {
+		return serializableKey(key)
+	})
+
+	if entries[0].Key != "topic" {
+		t.Fatalf("Expected key to be %v, received %v", "topic", entries[0].Key)
 	}
 	if string(entries[0].Value) != "microservices" {
 		t.Fatalf("Expected value to be %v, received %v", "microservices", string(entries[0].Value))
 	}
 
-	if string(entries[1].Key) != "disk" {
-		t.Fatalf("Expected key to be %v, received %v", "disk", string(entries[1].Key))
+	if entries[1].Key != "disk" {
+		t.Fatalf("Expected key to be %v, received %v", "disk", entries[1].Key)
 	}
 	if string(entries[1].Value) != "ssd" {
 		t.Fatalf("Expected value to be %v, received %v", "ssd", string(entries[1].Value))

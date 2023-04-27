@@ -13,13 +13,19 @@ type StoredEntry struct {
 	Deleted bool
 }
 
+type MappedStoredEntry[K key.BitCaskKey] struct {
+	Key     K
+	Value   []byte
+	Deleted bool
+}
+
 type AppendEntryResponse struct {
 	FileId      uint64
 	Offset      int64
 	EntryLength int
 }
 
-type Segment[Key key.Serializable] struct {
+type Segment[Key key.BitCaskKey] struct {
 	fileId   uint64
 	filePath string
 	store    *Store
@@ -27,7 +33,7 @@ type Segment[Key key.Serializable] struct {
 
 const segmentFilePrefix = "bitcask"
 
-func NewSegment[Key key.Serializable](fileId uint64, directory string) (*Segment[Key], error) {
+func NewSegment[Key key.BitCaskKey](fileId uint64, directory string) (*Segment[Key], error) {
 	filePath, err := createSegment(fileId, directory)
 	if err != nil {
 		return nil, err
@@ -65,12 +71,12 @@ func (segment *Segment[Key]) read(offset int64, size uint64) (*StoredEntry, erro
 	return storedEntry, nil
 }
 
-func (segment *Segment[Key]) readFull() ([]*StoredEntry, error) {
+func (segment *Segment[Key]) readFull(keyMapper func([]byte) Key) ([]*MappedStoredEntry[Key], error) {
 	bytes, err := segment.store.readFull()
 	if err != nil {
 		return nil, err
 	}
-	storedEntries := decodeMulti(bytes)
+	storedEntries := decodeMulti(bytes, keyMapper)
 	return storedEntries, nil
 }
 

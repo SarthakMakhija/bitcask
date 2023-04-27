@@ -39,23 +39,23 @@ func (segments *Segments[Key]) Append(key Key, value []byte) (*AppendEntryRespon
 	if err := segments.maybeRolloverSegment(); err != nil {
 		return nil, err
 	}
-	return segments.activeSegment.Append(NewEntry[Key](key, value, segments.clock))
+	return segments.activeSegment.append(NewEntry[Key](key, value, segments.clock))
 }
 
 func (segments *Segments[Key]) AppendDeleted(key Key) (*AppendEntryResponse, error) {
 	if err := segments.maybeRolloverSegment(); err != nil {
 		return nil, err
 	}
-	return segments.activeSegment.Append(NewDeletedEntry[Key](key, segments.clock))
+	return segments.activeSegment.append(NewDeletedEntry[Key](key, segments.clock))
 }
 
 func (segments *Segments[Key]) Read(fileId uint64, offset int64, size uint64) (*StoredEntry, error) {
 	if fileId == segments.activeSegment.fileId {
-		return segments.activeSegment.Read(offset, size)
+		return segments.activeSegment.read(offset, size)
 	}
 	segment, ok := segments.inactiveSegments[fileId]
 	if ok {
-		return segment.Read(offset, size)
+		return segment.read(offset, size)
 	}
 	return nil, errors.New(fmt.Sprintf("Invalid file id %v", fileId))
 }

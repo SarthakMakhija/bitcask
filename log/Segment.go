@@ -43,7 +43,7 @@ func NewSegment[Key key.Serializable](fileId uint64, directory string) (*Segment
 	}, nil
 }
 
-func (segment *Segment[Key]) Append(entry *Entry[Key]) (*AppendEntryResponse, error) {
+func (segment *Segment[Key]) append(entry *Entry[Key]) (*AppendEntryResponse, error) {
 	encoded := entry.encode()
 	offset, err := segment.store.append(encoded)
 	if err != nil {
@@ -56,7 +56,7 @@ func (segment *Segment[Key]) Append(entry *Entry[Key]) (*AppendEntryResponse, er
 	}, nil
 }
 
-func (segment *Segment[Key]) Read(offset int64, size uint64) (*StoredEntry, error) {
+func (segment *Segment[Key]) read(offset int64, size uint64) (*StoredEntry, error) {
 	bytes, err := segment.store.read(offset, size)
 	if err != nil {
 		return nil, err

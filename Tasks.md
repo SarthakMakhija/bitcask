@@ -3,6 +3,7 @@
 - [ ] Hint file
 - [ ] Recovery on DB init
 - [ ] Provide type aliases for commonly used types
+- [ ] Introduce `FileSystem` in `Store`
 - [ ] Transaction (optional)
 - [ ] Documentation
 - [ ] README

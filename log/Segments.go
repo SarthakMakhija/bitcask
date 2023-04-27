@@ -1,6 +1,7 @@
 package log
 
 import (
+	"bitcask/clock"
 	"bitcask/key"
 	"bitcask/log/id"
 	"errors"
@@ -11,11 +12,12 @@ type Segments[Key key.Serializable] struct {
 	activeSegment       *Segment[Key]
 	inactiveSegments    map[uint64]*Segment[Key]
 	fileIdGenerator     *id.FileIdGenerator
+	clock               clock.Clock
 	maxSegmentSizeBytes uint64
 	directory           string
 }
 
-func NewSegments[Key key.Serializable](directory string, maxSegmentSizeBytes uint64) (*Segments[Key], error) {
+func NewSegments[Key key.Serializable](directory string, maxSegmentSizeBytes uint64, clock clock.Clock) (*Segments[Key], error) {
 	fileIdGenerator := id.NewFileIdGenerator()
 	fileId := fileIdGenerator.Next()
 	segment, err := NewSegment[Key](fileId, directory)
@@ -27,6 +29,7 @@ func NewSegments[Key key.Serializable](directory string, maxSegmentSizeBytes uin
 		activeSegment:       segment,
 		inactiveSegments:    make(map[uint64]*Segment[Key]), //TODO: capacity
 		fileIdGenerator:     fileIdGenerator,
+		clock:               clock,
 		maxSegmentSizeBytes: maxSegmentSizeBytes,
 		directory:           directory,
 	}, nil
@@ -36,14 +39,14 @@ func (segments *Segments[Key]) Append(key Key, value []byte) (*AppendEntryRespon
 	if err := segments.maybeRolloverSegment(); err != nil {
 		return nil, err
 	}
-	return segments.activeSegment.Append(NewEntry[Key](key, value))
+	return segments.activeSegment.Append(NewEntry[Key](key, value, segments.clock))
 }
 
 func (segments *Segments[Key]) AppendDeleted(key Key) (*AppendEntryResponse, error) {
 	if err := segments.maybeRolloverSegment(); err != nil {
 		return nil, err
 	}
-	return segments.activeSegment.Append(NewDeletedEntry[Key](key))
+	return segments.activeSegment.Append(NewDeletedEntry[Key](key, segments.clock))
 }
 
 func (segments *Segments[Key]) Read(fileId uint64, offset int64, size uint64) (*StoredEntry, error) {

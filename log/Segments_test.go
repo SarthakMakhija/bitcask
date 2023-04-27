@@ -1,9 +1,12 @@
 package log
 
-import "testing"
+import (
+	"bitcask/clock"
+	"testing"
+)
 
 func TestReadActiveSegmentWithAnEntry(t *testing.T) {
-	segments, _ := NewSegments[serializableKey](".", 100)
+	segments, _ := NewSegments[serializableKey](".", 100, clock.NewSystemClock())
 	defer func() {
 		segments.RemoveActive()
 	}()
@@ -20,7 +23,7 @@ func TestReadActiveSegmentWithAnEntry(t *testing.T) {
 }
 
 func TestReadAnInactiveSegmentWith(t *testing.T) {
-	segments, _ := NewSegments[serializableKey](".", 32)
+	segments, _ := NewSegments[serializableKey](".", 32, clock.NewSystemClock())
 	defer func() {
 		segments.RemoveActive()
 		segments.RemoveAllInactive()
@@ -40,7 +43,7 @@ func TestReadAnInactiveSegmentWith(t *testing.T) {
 }
 
 func TestReadInvalidSegment(t *testing.T) {
-	segments, _ := NewSegments[serializableKey](".", 100)
+	segments, _ := NewSegments[serializableKey](".", 100, clock.NewSystemClock())
 	defer func() {
 		segments.RemoveActive()
 	}()
@@ -54,7 +57,7 @@ func TestReadInvalidSegment(t *testing.T) {
 }
 
 func TestReadASegmentWithADeletedEntry(t *testing.T) {
-	segments, _ := NewSegments[serializableKey](".", 100)
+	segments, _ := NewSegments[serializableKey](".", 100, clock.NewSystemClock())
 	defer func() {
 		segments.RemoveActive()
 	}()

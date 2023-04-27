@@ -1,6 +1,9 @@
 package log
 
-import "testing"
+import (
+	"bitcask/clock"
+	"testing"
+)
 
 type serializableKey string
 
@@ -9,7 +12,7 @@ func (key serializableKey) Serialize() []byte {
 }
 
 func TestEncodesAKeyValuePair(t *testing.T) {
-	entry := NewEntry[serializableKey]("topic", []byte("microservices"))
+	entry := NewEntry[serializableKey]("topic", []byte("microservices"), clock.NewSystemClock())
 	encoded := entry.encode()
 
 	key, value, deleted := decode(encoded)
@@ -25,7 +28,7 @@ func TestEncodesAKeyValuePair(t *testing.T) {
 }
 
 func TestEncodesADeletedKeyValuePair(t *testing.T) {
-	entry := NewDeletedEntry[serializableKey]("topic")
+	entry := NewDeletedEntry[serializableKey]("topic", clock.NewSystemClock())
 	encoded := entry.encode()
 
 	key, _, deleted := decode(encoded)

@@ -1,12 +1,14 @@
 package log
 
 import (
+	"bitcask/clock"
 	"bitcask/key"
 	"encoding/binary"
 	"unsafe"
 )
 
 var reservedKeySize, reservedValueSize = uint32(unsafe.Sizeof(uint32(0))), uint32(unsafe.Sizeof(uint32(0)))
+var reservedTimestampSize = uint32(unsafe.Sizeof(uint64(0)))
 var littleEndian = binary.LittleEndian
 var tombstoneMarkerSize = uint32(unsafe.Sizeof(byte(0)))
 
@@ -18,19 +20,22 @@ type valueReference struct {
 type Entry[Key key.Serializable] struct {
 	key   Key
 	value valueReference
+	clock clock.Clock
 }
 
-func NewEntry[Key key.Serializable](key Key, value []byte) *Entry[Key] {
+func NewEntry[Key key.Serializable](key Key, value []byte, clock clock.Clock) *Entry[Key] {
 	return &Entry[Key]{
 		key:   key,
 		value: valueReference{value: value, tombstone: 0},
+		clock: clock,
 	}
 }
 
-func NewDeletedEntry[Key key.Serializable](key Key) *Entry[Key] {
+func NewDeletedEntry[Key key.Serializable](key Key, clock clock.Clock) *Entry[Key] {
 	return &Entry[Key]{
 		key:   key,
 		value: valueReference{value: []byte{}, tombstone: 1},
+		clock: clock,
 	}
 }
 
@@ -38,10 +43,13 @@ func (entry *Entry[Key]) encode() []byte {
 	serializedKey := entry.key.Serialize()
 	keySize, valueSize := uint32(len(serializedKey)), uint32(len(entry.value.value))+tombstoneMarkerSize
 
-	encoded := make([]byte, reservedKeySize+reservedValueSize+keySize+valueSize)
+	encoded := make([]byte, reservedTimestampSize+reservedKeySize+reservedValueSize+keySize+valueSize)
 	var offset uint32 = 0
 
-	littleEndian.PutUint32(encoded, keySize)
+	littleEndian.PutUint64(encoded, uint64(entry.clock.Now()))
+	offset = offset + reservedTimestampSize
+
+	littleEndian.PutUint32(encoded[offset:], keySize)
 	offset = offset + reservedKeySize
 
 	littleEndian.PutUint32(encoded[offset:], valueSize)
@@ -56,7 +64,11 @@ func (entry *Entry[Key]) encode() []byte {
 
 func decode(content []byte) ([]byte, []byte, bool) {
 	var offset uint32 = 0
-	keySize := littleEndian.Uint32(content[offset:reservedKeySize])
+
+	_ = littleEndian.Uint64(content)
+	offset = offset + reservedTimestampSize
+
+	keySize := littleEndian.Uint32(content[offset:])
 	offset = offset + reservedKeySize
 
 	valueSize := littleEndian.Uint32(content[offset:])

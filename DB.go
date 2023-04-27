@@ -14,7 +14,7 @@ type DB[Key key.BitCaskKey] struct {
 }
 
 func NewDB[Key key.BitCaskKey](config *Config) (*DB[Key], error) {
-	segments, err := log.NewSegments[Key](config.Directory(), config.MaxSegmentSizeInBytes())
+	segments, err := log.NewSegments[Key](config.Directory(), config.MaxSegmentSizeInBytes(), config.Clock())
 	if err != nil {
 		return nil, err
 	}

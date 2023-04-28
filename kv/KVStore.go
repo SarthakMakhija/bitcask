@@ -78,6 +78,16 @@ func (kv *KVStore[Key]) ReadPairOfInactiveSegment(keyMapper func([]byte) Key) ([
 	return kv.segments.ReadPairOfInactiveSegments(keyMapper)
 }
 
+func (kv *KVStore[Key]) WriteBack(changes map[Key]*log.MappedStoredEntry[Key]) error {
+	writeBackResponses, err := kv.segments.WriteBack(changes)
+	if err != nil {
+		return err
+	}
+	kv.keyDirectory.BulkUpdate(writeBackResponses)
+	//TODO: Delete old files and remove those file ids from inactive segment map
+	return nil
+}
+
 func (kv *KVStore[Key]) ClearLog() {
 	kv.segments.RemoveActive()
 	kv.segments.RemoveAllInactive()

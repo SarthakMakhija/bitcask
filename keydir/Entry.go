@@ -8,6 +8,11 @@ type Entry struct {
 	EntryLength int
 }
 
+type KeyEntryPair[K comparable] struct {
+	Key   K
+	entry *Entry
+}
+
 func NewEntryFrom(response *log.AppendEntryResponse) *Entry {
 	return NewEntry(response.FileId, response.Offset, response.EntryLength)
 }

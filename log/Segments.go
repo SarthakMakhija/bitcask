@@ -17,6 +17,11 @@ type Segments[Key config.BitCaskKey] struct {
 	directory           string
 }
 
+type WriteBackResponse[K config.BitCaskKey] struct {
+	Key                 K
+	AppendEntryResponse *AppendEntryResponse
+}
+
 func NewSegments[Key config.BitCaskKey](directory string, maxSegmentSizeBytes uint64, clock clock.Clock) (*Segments[Key], error) {
 	fileIdGenerator := id.NewFileIdGenerator()
 	fileId := fileIdGenerator.Next()
@@ -92,27 +97,32 @@ func (segments *Segments[Key]) ReadPairOfInactiveSegments(keyMapper func([]byte)
 	return contents, nil
 }
 
-func (segments *Segments[Key]) WriteBackInactive(changes map[Key]*MappedStoredEntry[Key]) error {
+func (segments *Segments[Key]) WriteBack(changes map[Key]*MappedStoredEntry[Key]) ([]*WriteBackResponse[Key], error) {
 	segment, err := NewSegment[Key](segments.fileIdGenerator.Next(), segments.directory)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	segments.inactiveSegments[segment.fileId] = segment
+
+	index, writeBackResponses := 0, make([]*WriteBackResponse[Key], len(changes))
 	for key, value := range changes {
-		_, err := segment.append(NewEntryPreservingTimestamp(key, value.Value, value.Timestamp, segments.clock))
+		appendEntryResponse, err := segment.append(NewEntryPreservingTimestamp(key, value.Value, value.Timestamp, segments.clock))
 		if err != nil {
-			return err
+			return nil, err
 		}
+		writeBackResponses[index] = &WriteBackResponse[Key]{Key: key, AppendEntryResponse: appendEntryResponse}
+		index = index + 1
+
 		newSegment, err := segments.maybeRolloverSegment(segment)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if newSegment != nil {
 			segments.inactiveSegments[newSegment.fileId] = newSegment
 			segment = newSegment
 		}
 	}
-	return nil
+	return writeBackResponses, nil
 }
 
 func (segments *Segments[Key]) RemoveActive() {

@@ -1,7 +1,8 @@
 package kv
 
 import (
-	config2 "bitcask/config"
+	bitCaskConfig "bitcask/config"
+	"bitcask/log"
 	"reflect"
 	"testing"
 )
@@ -13,7 +14,7 @@ func (key serializableKey) Serialize() []byte {
 }
 
 func TestPutAndDoASilentGet(t *testing.T) {
-	config := config2.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -27,7 +28,7 @@ func TestPutAndDoASilentGet(t *testing.T) {
 }
 
 func TestSilentGetANonExistentKey(t *testing.T) {
-	config := config2.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -39,7 +40,7 @@ func TestSilentGetANonExistentKey(t *testing.T) {
 }
 
 func TestPutAndDoAGet(t *testing.T) {
-	config := config2.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -53,7 +54,7 @@ func TestPutAndDoAGet(t *testing.T) {
 }
 
 func TestGetANonExistentKey(t *testing.T) {
-	config := config2.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -65,7 +66,7 @@ func TestGetANonExistentKey(t *testing.T) {
 }
 
 func TestUpdateAndDoASilentGet(t *testing.T) {
-	config := config2.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -80,7 +81,7 @@ func TestUpdateAndDoASilentGet(t *testing.T) {
 }
 
 func TestUpdateAndDoAGet(t *testing.T) {
-	config := config2.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -95,7 +96,7 @@ func TestUpdateAndDoAGet(t *testing.T) {
 }
 
 func TestDeleteAndDoASilentGet(t *testing.T) {
-	config := config2.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -109,7 +110,7 @@ func TestDeleteAndDoASilentGet(t *testing.T) {
 }
 
 func TestDeleteAndDoAGet(t *testing.T) {
-	config := config2.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -123,7 +124,7 @@ func TestDeleteAndDoAGet(t *testing.T) {
 }
 
 func TestReadsAPairOfInactiveSegments(t *testing.T) {
-	config := config2.NewConfig(".", 8, 16)
+	config := bitCaskConfig.NewConfig(".", 8, 16)
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -143,5 +144,33 @@ func TestReadsAPairOfInactiveSegments(t *testing.T) {
 	otherEntries := pair[1]
 	if otherEntries[0].Key != "topic" && otherEntries[0].Key != "diskType" {
 		t.Fatalf("Expected other key to be either of %v | %v, received %v", "topic", "diskType", entries[0].Key)
+	}
+}
+
+func TestWriteBacks(t *testing.T) {
+	config := bitCaskConfig.NewConfig(".", 8, 16)
+	kv, _ := NewKVStore[serializableKey](config)
+	defer kv.ClearLog()
+
+	changes := make(map[serializableKey]*log.MappedStoredEntry[serializableKey])
+	changes["disk"] = &log.MappedStoredEntry[serializableKey]{Value: []byte("solid state drive")}
+	changes["engine"] = &log.MappedStoredEntry[serializableKey]{Value: []byte("bitcask")}
+	changes["topic"] = &log.MappedStoredEntry[serializableKey]{Value: []byte("Microservices")}
+
+	_ = kv.WriteBack(changes)
+
+	value, _ := kv.SilentGet("disk")
+	if !reflect.DeepEqual([]byte("solid state drive"), value) {
+		t.Fatalf("Expected value to be %v, received %v", "solid state drive", string(value))
+	}
+
+	value, _ = kv.SilentGet("engine")
+	if !reflect.DeepEqual([]byte("bitcask"), value) {
+		t.Fatalf("Expected value to be %v, received %v", "bitcask", string(value))
+	}
+
+	value, _ = kv.SilentGet("topic")
+	if !reflect.DeepEqual([]byte("Microservices"), value) {
+		t.Fatalf("Expected value to be %v, received %v", "Microservices", string(value))
 	}
 }

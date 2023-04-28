@@ -133,7 +133,7 @@ func TestWriteBackInvolvingRollover(t *testing.T) {
 	changes["engine"] = &MappedStoredEntry[serializableKey]{Value: []byte("bitcask")}
 	changes["topic"] = &MappedStoredEntry[serializableKey]{Value: []byte("Microservices")}
 
-	_ = segments.WriteBackInactive(changes)
+	_, _ = segments.WriteBack(changes)
 
 	allKeys := allInactiveSegmentsKeys(segments)
 	expectedKeys := []serializableKey{"disk", "engine", "topic"}
@@ -155,7 +155,7 @@ func TestWriteBackNotInvolvingRollover(t *testing.T) {
 	changes["engine"] = &MappedStoredEntry[serializableKey]{Value: []byte("bitcask")}
 	changes["topic"] = &MappedStoredEntry[serializableKey]{Value: []byte("Microservices")}
 
-	_ = segments.WriteBackInactive(changes)
+	_, _ = segments.WriteBack(changes)
 
 	allKeys := allInactiveSegmentsKeys(segments)
 	expectedKeys := []serializableKey{"disk", "engine", "topic"}

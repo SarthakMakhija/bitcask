@@ -76,15 +76,11 @@ func (segments *Segments[Key]) ReadFull(fileId uint64, keyMapper func([]byte) Ke
 	return nil, errors.New(fmt.Sprintf("Invalid file id %v", fileId))
 }
 
-func (segments *Segments[Key]) ReadPairOfInactiveSegments(keyMapper func([]byte) Key) ([]uint64, [][]*MappedStoredEntry[Key], error) {
-	if len(segments.inactiveSegments) < 2 {
-		return nil, nil, errors.New(fmt.Sprintf("Size of inactive segments is less than 2, actual size is %v", len(segments.inactiveSegments)))
-	}
-
-	index := 0
-	contents, fileIds := make([][]*MappedStoredEntry[Key], 2), make([]uint64, 2)
+func (segments *Segments[Key]) ReadInactiveSegments(totalSegments uint8, keyMapper func([]byte) Key) ([]uint64, [][]*MappedStoredEntry[Key], error) {
+	var index uint8 = 0
+	contents, fileIds := make([][]*MappedStoredEntry[Key], totalSegments), make([]uint64, totalSegments)
 	for _, segment := range segments.inactiveSegments {
-		if index >= 2 {
+		if index >= totalSegments {
 			break
 		}
 		entries, err := segment.readFull(keyMapper)

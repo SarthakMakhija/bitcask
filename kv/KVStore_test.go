@@ -132,7 +132,7 @@ func TestReadsAPairOfInactiveSegments(t *testing.T) {
 	_ = kv.Put("diskType", []byte("solid state drive"))
 	_ = kv.Put("engine", []byte("bitcask"))
 
-	_, pair, _ := kv.ReadPairOfInactiveSegment(func(key []byte) serializableKey {
+	_, pair, _ := kv.ReadInactiveSegments(2, func(key []byte) serializableKey {
 		return serializableKey(key)
 	})
 

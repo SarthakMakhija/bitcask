@@ -74,8 +74,8 @@ func (kv *KVStore[Key]) Get(key Key) ([]byte, error) {
 	return nil, errors.New(fmt.Sprintf("Key %v does not exist", key))
 }
 
-func (kv *KVStore[Key]) ReadPairOfInactiveSegment(keyMapper func([]byte) Key) ([]uint64, [][]*log.MappedStoredEntry[Key], error) {
-	return kv.segments.ReadPairOfInactiveSegments(keyMapper)
+func (kv *KVStore[Key]) ReadInactiveSegments(totalSegments uint8, keyMapper func([]byte) Key) ([]uint64, [][]*log.MappedStoredEntry[Key], error) {
+	return kv.segments.ReadInactiveSegments(totalSegments, keyMapper)
 }
 
 func (kv *KVStore[Key]) WriteBack(fileIds []uint64, changes map[Key]*log.MappedStoredEntry[Key]) error {

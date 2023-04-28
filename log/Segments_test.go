@@ -78,23 +78,6 @@ func TestReadASegmentWithADeletedEntry(t *testing.T) {
 	}
 }
 
-func TestAttemptsToReadAPairOfInactiveSegmentsWhenInActiveSegmentsAreLessThan2(t *testing.T) {
-	segments, _ := NewSegments[serializableKey](".", 100, clock.NewSystemClock())
-	defer func() {
-		segments.RemoveActive()
-		segments.RemoveAllInactive()
-	}()
-
-	_, _ = segments.Append("topic", []byte("microservices"))
-
-	_, _, err := segments.ReadPairOfInactiveSegments(func(key []byte) serializableKey {
-		return serializableKey(key)
-	})
-	if err == nil {
-		t.Fatalf("Expected an error while reading a pair of inactive segments when the count of inactive segments was less than 2")
-	}
-}
-
 func TestReadsAPairOfInactiveSegmentsFull(t *testing.T) {
 	segments, _ := NewSegments[serializableKey](".", 8, clock.NewSystemClock())
 	defer func() {
@@ -106,7 +89,7 @@ func TestReadsAPairOfInactiveSegmentsFull(t *testing.T) {
 	_, _ = segments.Append("diskType", []byte("solid state drive"))
 	_, _ = segments.Append("engine", []byte("bitcask"))
 
-	_, pair, _ := segments.ReadPairOfInactiveSegments(func(key []byte) serializableKey {
+	_, pair, _ := segments.ReadInactiveSegments(2, func(key []byte) serializableKey {
 		return serializableKey(key)
 	})
 

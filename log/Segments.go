@@ -36,14 +36,14 @@ func NewSegments[Key config.BitCaskKey](directory string, maxSegmentSizeBytes ui
 }
 
 func (segments *Segments[Key]) Append(key Key, value []byte) (*AppendEntryResponse, error) {
-	if err := segments.maybeRolloverSegment(); err != nil {
+	if err := segments.maybeRolloverActiveSegment(); err != nil {
 		return nil, err
 	}
 	return segments.activeSegment.append(NewEntry[Key](key, value, segments.clock))
 }
 
 func (segments *Segments[Key]) AppendDeleted(key Key) (*AppendEntryResponse, error) {
-	if err := segments.maybeRolloverSegment(); err != nil {
+	if err := segments.maybeRolloverActiveSegment(); err != nil {
 		return nil, err
 	}
 	return segments.activeSegment.append(NewDeletedEntry[Key](key, segments.clock))
@@ -92,6 +92,29 @@ func (segments *Segments[Key]) ReadPairOfInactiveSegments(keyMapper func([]byte)
 	return contents, nil
 }
 
+func (segments *Segments[Key]) WriteBackInactive(changes map[Key]*MappedStoredEntry[Key]) error {
+	segment, err := NewSegment[Key](segments.fileIdGenerator.Next(), segments.directory)
+	if err != nil {
+		return err
+	}
+	segments.inactiveSegments[segment.fileId] = segment
+	for key, value := range changes {
+		_, err := segment.append(NewEntry(key, value.Value, segments.clock))
+		if err != nil {
+			return err
+		}
+		newSegment, err := segments.maybeRolloverSegment(segment)
+		if err != nil {
+			return err
+		}
+		if newSegment != nil {
+			segments.inactiveSegments[newSegment.fileId] = newSegment
+			segment = newSegment
+		}
+	}
+	return nil
+}
+
 func (segments *Segments[Key]) RemoveActive() {
 	segments.activeSegment.remove()
 }
@@ -102,16 +125,26 @@ func (segments *Segments[Key]) RemoveAllInactive() {
 	}
 }
 
-func (segments *Segments[Key]) maybeRolloverSegment() error {
-	if segments.activeSegment.sizeInBytes() >= int64(segments.maxSegmentSizeBytes) {
-		segments.activeSegment.stopWrites()
-		segment, err := NewSegment[Key](segments.fileIdGenerator.Next(), segments.directory)
-		if err != nil {
-			return err
-		}
+func (segments *Segments[Key]) maybeRolloverActiveSegment() error {
+	newSegment, err := segments.maybeRolloverSegment(segments.activeSegment)
+	if err != nil {
+		return err
+	}
+	if newSegment != nil {
 		segments.inactiveSegments[segments.activeSegment.fileId] = segments.activeSegment
-		segments.activeSegment = segment
-		return nil
+		segments.activeSegment = newSegment
 	}
 	return nil
+}
+
+func (segments *Segments[Key]) maybeRolloverSegment(segment *Segment[Key]) (*Segment[Key], error) {
+	if segment.sizeInBytes() >= int64(segments.maxSegmentSizeBytes) {
+		segment.stopWrites()
+		newSegment, err := NewSegment[Key](segments.fileIdGenerator.Next(), segments.directory)
+		if err != nil {
+			return nil, err
+		}
+		return newSegment, nil
+	}
+	return nil, nil
 }

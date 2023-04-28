@@ -2,6 +2,8 @@ package log
 
 import (
 	"bitcask/clock"
+	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -9,6 +11,7 @@ func TestReadActiveSegmentWithAnEntry(t *testing.T) {
 	segments, _ := NewSegments[serializableKey](".", 100, clock.NewSystemClock())
 	defer func() {
 		segments.RemoveActive()
+		segments.RemoveAllInactive()
 	}()
 
 	appendEntryResponse, _ := segments.Append("topic", []byte("microservices"))
@@ -22,7 +25,7 @@ func TestReadActiveSegmentWithAnEntry(t *testing.T) {
 	}
 }
 
-func TestReadAnInactiveSegmentWith(t *testing.T) {
+func TestReadAnInactiveSegmentInvolvingRollover(t *testing.T) {
 	segments, _ := NewSegments[serializableKey](".", 32, clock.NewSystemClock())
 	defer func() {
 		segments.RemoveActive()
@@ -46,6 +49,7 @@ func TestAttemptsToReadInvalidSegment(t *testing.T) {
 	segments, _ := NewSegments[serializableKey](".", 100, clock.NewSystemClock())
 	defer func() {
 		segments.RemoveActive()
+		segments.RemoveAllInactive()
 	}()
 
 	appendEntryResponse, _ := segments.Append("topic", []byte("microservices"))
@@ -60,6 +64,7 @@ func TestReadASegmentWithADeletedEntry(t *testing.T) {
 	segments, _ := NewSegments[serializableKey](".", 100, clock.NewSystemClock())
 	defer func() {
 		segments.RemoveActive()
+		segments.RemoveAllInactive()
 	}()
 
 	appendEntryResponse, _ := segments.AppendDeleted("topic")
@@ -77,6 +82,7 @@ func TestAttemptsToReadAPairOfInactiveSegmentsWhenInActiveSegmentsAreLessThan2(t
 	segments, _ := NewSegments[serializableKey](".", 100, clock.NewSystemClock())
 	defer func() {
 		segments.RemoveActive()
+		segments.RemoveAllInactive()
 	}()
 
 	_, _ = segments.Append("topic", []byte("microservices"))
@@ -113,4 +119,64 @@ func TestReadsAPairOfInactiveSegmentsFull(t *testing.T) {
 	if otherEntries[0].Key != "topic" && otherEntries[0].Key != "diskType" {
 		t.Fatalf("Expected other key to be either of %v | %v, received %v", "topic", "diskType", entries[0].Key)
 	}
+}
+
+func TestWriteBackInvolvingRollover(t *testing.T) {
+	segments, _ := NewSegments[serializableKey](".", 8, clock.NewSystemClock())
+	defer func() {
+		segments.RemoveActive()
+		segments.RemoveAllInactive()
+	}()
+
+	changes := make(map[serializableKey]*MappedStoredEntry[serializableKey])
+	changes["disk"] = &MappedStoredEntry[serializableKey]{Value: []byte("solid state drive")}
+	changes["engine"] = &MappedStoredEntry[serializableKey]{Value: []byte("bitcask")}
+	changes["topic"] = &MappedStoredEntry[serializableKey]{Value: []byte("Microservices")}
+
+	_ = segments.WriteBackInactive(changes)
+
+	allKeys := allInactiveSegmentsKeys(segments)
+	expectedKeys := []serializableKey{"disk", "engine", "topic"}
+
+	if !reflect.DeepEqual(expectedKeys, allKeys) {
+		t.Fatalf("Expected all keys from inactive segments to be %v, received %v", expectedKeys, allKeys)
+	}
+}
+
+func TestWriteBackNotInvolvingRollover(t *testing.T) {
+	segments, _ := NewSegments[serializableKey](".", 256, clock.NewSystemClock())
+	defer func() {
+		segments.RemoveActive()
+		segments.RemoveAllInactive()
+	}()
+
+	changes := make(map[serializableKey]*MappedStoredEntry[serializableKey])
+	changes["disk"] = &MappedStoredEntry[serializableKey]{Value: []byte("solid state drive")}
+	changes["engine"] = &MappedStoredEntry[serializableKey]{Value: []byte("bitcask")}
+	changes["topic"] = &MappedStoredEntry[serializableKey]{Value: []byte("Microservices")}
+
+	_ = segments.WriteBackInactive(changes)
+
+	allKeys := allInactiveSegmentsKeys(segments)
+	expectedKeys := []serializableKey{"disk", "engine", "topic"}
+
+	if !reflect.DeepEqual(expectedKeys, allKeys) {
+		t.Fatalf("Expected all keys from inactive segments to be %v, received %v", expectedKeys, allKeys)
+	}
+}
+
+func allInactiveSegmentsKeys(segments *Segments[serializableKey]) []serializableKey {
+	var allKeys []serializableKey
+	for _, segment := range segments.inactiveSegments {
+		contents, _ := segment.readFull(func(key []byte) serializableKey {
+			return serializableKey(key)
+		})
+		for _, content := range contents {
+			allKeys = append(allKeys, content.Key)
+		}
+	}
+	sort.SliceStable(allKeys, func(i, j int) bool {
+		return allKeys[i] < allKeys[j]
+	})
+	return allKeys
 }

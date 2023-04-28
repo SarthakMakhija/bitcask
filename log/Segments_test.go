@@ -81,7 +81,7 @@ func TestAttemptsToReadAPairOfInactiveSegmentsWhenInActiveSegmentsAreLessThan2(t
 
 	_, _ = segments.Append("topic", []byte("microservices"))
 
-	_, err := segments.ReadPairOfInactiveSegment(func(key []byte) serializableKey {
+	_, err := segments.ReadPairOfInactiveSegments(func(key []byte) serializableKey {
 		return serializableKey(key)
 	})
 	if err == nil {
@@ -100,7 +100,7 @@ func TestReadsAPairOfInactiveSegmentsFull(t *testing.T) {
 	_, _ = segments.Append("diskType", []byte("solid state drive"))
 	_, _ = segments.Append("engine", []byte("bitcask"))
 
-	pair, _ := segments.ReadPairOfInactiveSegment(func(key []byte) serializableKey {
+	pair, _ := segments.ReadPairOfInactiveSegments(func(key []byte) serializableKey {
 		return serializableKey(key)
 	})
 

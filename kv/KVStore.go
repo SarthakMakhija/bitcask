@@ -75,7 +75,7 @@ func (kv *KVStore[Key]) Get(key Key) ([]byte, error) {
 }
 
 func (kv *KVStore[Key]) ReadPairOfInactiveSegment(keyMapper func([]byte) Key) ([][]*log.MappedStoredEntry[Key], error) {
-	return kv.segments.ReadPairOfInactiveSegment(keyMapper)
+	return kv.segments.ReadPairOfInactiveSegments(keyMapper)
 }
 
 func (kv *KVStore[Key]) ClearLog() {

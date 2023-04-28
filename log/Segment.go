@@ -8,15 +8,17 @@ import (
 )
 
 type StoredEntry struct {
-	Key     []byte
-	Value   []byte
-	Deleted bool
+	Key       []byte
+	Value     []byte
+	Deleted   bool
+	Timestamp uint32
 }
 
 type MappedStoredEntry[K config.BitCaskKey] struct {
-	Key     K
-	Value   []byte
-	Deleted bool
+	Key       K
+	Value     []byte
+	Deleted   bool
+	Timestamp uint32
 }
 
 type AppendEntryResponse struct {

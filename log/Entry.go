@@ -76,9 +76,10 @@ func decodeMulti[Key config.BitCaskKey](content []byte, keyMapper func([]byte) K
 	for offset < contentLength {
 		entry, traversedOffset := decodeFrom(content, offset)
 		entries = append(entries, &MappedStoredEntry[Key]{
-			Key:     keyMapper(entry.Key),
-			Value:   entry.Value,
-			Deleted: entry.Deleted,
+			Key:       keyMapper(entry.Key),
+			Value:     entry.Value,
+			Deleted:   entry.Deleted,
+			Timestamp: entry.Timestamp,
 		})
 		offset = traversedOffset
 	}
@@ -86,7 +87,7 @@ func decodeMulti[Key config.BitCaskKey](content []byte, keyMapper func([]byte) K
 }
 
 func decodeFrom(content []byte, offset uint32) (*StoredEntry, uint32) {
-	_ = littleEndian.Uint32(content)
+	timestamp := littleEndian.Uint32(content)
 	offset = offset + reservedTimestampSize
 
 	keySize := littleEndian.Uint32(content[offset:])
@@ -103,8 +104,9 @@ func decodeFrom(content []byte, offset uint32) (*StoredEntry, uint32) {
 
 	valueLength := len(value)
 	return &StoredEntry{
-		Key:     serializedKey,
-		Value:   value[:valueLength-1],
-		Deleted: value[valueLength-1]&0x01 == 0x01,
+		Key:       serializedKey,
+		Value:     value[:valueLength-1],
+		Deleted:   value[valueLength-1]&0x01 == 0x01,
+		Timestamp: timestamp,
 	}, offset
 }

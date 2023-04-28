@@ -18,24 +18,36 @@ type valueReference struct {
 }
 
 type Entry[Key config.Serializable] struct {
-	key   Key
-	value valueReference
-	clock clock.Clock
+	key       Key
+	value     valueReference
+	timestamp int
+	clock     clock.Clock
 }
 
 func NewEntry[Key config.Serializable](key Key, value []byte, clock clock.Clock) *Entry[Key] {
 	return &Entry[Key]{
-		key:   key,
-		value: valueReference{value: value, tombstone: 0},
-		clock: clock,
+		key:       key,
+		value:     valueReference{value: value, tombstone: 0},
+		timestamp: 0,
+		clock:     clock,
+	}
+}
+
+func NewEntryPreservingTimestamp[Key config.Serializable](key Key, value []byte, ts int, clock clock.Clock) *Entry[Key] {
+	return &Entry[Key]{
+		key:       key,
+		value:     valueReference{value: value, tombstone: 0},
+		timestamp: ts,
+		clock:     clock,
 	}
 }
 
 func NewDeletedEntry[Key config.Serializable](key Key, clock clock.Clock) *Entry[Key] {
 	return &Entry[Key]{
-		key:   key,
-		value: valueReference{value: []byte{}, tombstone: 1},
-		clock: clock,
+		key:       key,
+		value:     valueReference{value: []byte{}, tombstone: 1},
+		timestamp: 0,
+		clock:     clock,
 	}
 }
 
@@ -46,7 +58,11 @@ func (entry *Entry[Key]) encode() []byte {
 	encoded := make([]byte, reservedTimestampSize+reservedKeySize+reservedValueSize+keySize+valueSize)
 	var offset uint32 = 0
 
-	littleEndian.PutUint32(encoded, uint32(entry.clock.Now()))
+	if entry.timestamp == 0 {
+		littleEndian.PutUint32(encoded, uint32(entry.clock.Now()))
+	} else {
+		littleEndian.PutUint32(encoded, uint32(entry.timestamp))
+	}
 	offset = offset + reservedTimestampSize
 
 	littleEndian.PutUint32(encoded[offset:], keySize)

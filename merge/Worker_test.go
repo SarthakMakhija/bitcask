@@ -7,7 +7,7 @@ import (
 )
 
 func TestMergeSegmentsWithUpdate(t *testing.T) {
-	config := bitCaskConfig.NewConfig(".", 4, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16)
 	store, _ := kv.NewKVStore[serializableKey](config)
 	defer store.ClearLog()
 
@@ -17,6 +17,7 @@ func TestMergeSegmentsWithUpdate(t *testing.T) {
 
 	_ = store.Put("topic", []byte("microservices"))
 	_ = store.Put("topic", []byte("bitcask"))
+	_ = store.Put("disk", []byte("ssd"))
 
 	worker.begin()
 
@@ -27,7 +28,7 @@ func TestMergeSegmentsWithUpdate(t *testing.T) {
 }
 
 func TestMergeSegmentsWithDeletion(t *testing.T) {
-	config := bitCaskConfig.NewConfig(".", 4, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16)
 	store, _ := kv.NewKVStore[serializableKey](config)
 	defer store.ClearLog()
 
@@ -36,6 +37,7 @@ func TestMergeSegmentsWithDeletion(t *testing.T) {
 	})
 
 	_ = store.Put("topic", []byte("microservices"))
+	_ = store.Put("disk", []byte("ssd"))
 	_ = store.Delete("topic")
 
 	worker.begin()

@@ -1,8 +1,11 @@
 - [ ] Concurrency
-- [ ] Merge and compaction
+- [X] Merge and compaction
+  - [X] Merge K segments
+  - [X] Write back merged results into M segments
+  - [X] Retain the latest timestamp (confirm if we should retain the latest timestamp)
+  - [ ] Schedule
 - [ ] Hint file
 - [ ] Recovery on DB init
-- [ ] Provide type aliases for commonly used types
 - [ ] Introduce `FileSystem` in `Store`
 - [ ] Transaction (optional)
 - [ ] Documentation

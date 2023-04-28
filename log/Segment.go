@@ -108,5 +108,5 @@ func createSegment(fileId uint64, directory string) (string, error) {
 }
 
 func segmentName(fileId uint64, directory string) string {
-	return path.Join(directory, fmt.Sprintf("%v_%v", fileId, segmentFilePrefix))
+	return path.Join(directory, fmt.Sprintf("%v_%v.data", fileId, segmentFilePrefix))
 }

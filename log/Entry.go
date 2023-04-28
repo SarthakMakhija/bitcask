@@ -59,7 +59,7 @@ func (entry *Entry[Key]) encode() []byte {
 	var offset uint32 = 0
 
 	if entry.timestamp == 0 {
-		littleEndian.PutUint32(encoded, uint32(entry.clock.Now()))
+		littleEndian.PutUint32(encoded, uint32(int(entry.clock.Now())))
 	} else {
 		littleEndian.PutUint32(encoded, entry.timestamp)
 	}

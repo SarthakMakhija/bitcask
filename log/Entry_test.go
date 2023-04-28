@@ -13,7 +13,7 @@ func (key serializableKey) Serialize() []byte {
 
 type FixedClock struct{}
 
-func (clock *FixedClock) Now() int {
+func (clock *FixedClock) Now() int64 {
 	return 100
 }
 

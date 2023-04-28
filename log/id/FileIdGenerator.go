@@ -1,15 +1,17 @@
 package id
 
-import "sync/atomic"
+import (
+	"bitcask/clock"
+)
 
 type FileIdGenerator struct {
-	id uint64
+	clock clock.Clock
 }
 
-func NewFileIdGenerator() *FileIdGenerator {
-	return &FileIdGenerator{id: 0}
+func NewFileIdGenerator(clock clock.Clock) *FileIdGenerator {
+	return &FileIdGenerator{clock: clock}
 }
 
 func (generator *FileIdGenerator) Next() uint64 {
-	return atomic.AddUint64(&generator.id, 1)
+	return uint64(generator.clock.Now())
 }

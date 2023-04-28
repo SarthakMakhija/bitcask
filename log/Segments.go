@@ -23,7 +23,7 @@ type WriteBackResponse[K config.BitCaskKey] struct {
 }
 
 func NewSegments[Key config.BitCaskKey](directory string, maxSegmentSizeBytes uint64, clock clock.Clock) (*Segments[Key], error) {
-	fileIdGenerator := id.NewFileIdGenerator()
+	fileIdGenerator := id.NewFileIdGenerator(clock)
 	fileId := fileIdGenerator.Next()
 	segment, err := NewSegment[Key](fileId, directory)
 	if err != nil {

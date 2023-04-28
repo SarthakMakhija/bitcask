@@ -132,7 +132,7 @@ func TestReadsAPairOfInactiveSegments(t *testing.T) {
 	_ = kv.Put("diskType", []byte("solid state drive"))
 	_ = kv.Put("engine", []byte("bitcask"))
 
-	pair, _ := kv.ReadPairOfInactiveSegment(func(key []byte) serializableKey {
+	_, pair, _ := kv.ReadPairOfInactiveSegment(func(key []byte) serializableKey {
 		return serializableKey(key)
 	})
 
@@ -157,7 +157,7 @@ func TestWriteBacks(t *testing.T) {
 	changes["engine"] = &log.MappedStoredEntry[serializableKey]{Value: []byte("bitcask")}
 	changes["topic"] = &log.MappedStoredEntry[serializableKey]{Value: []byte("Microservices")}
 
-	_ = kv.WriteBack(changes)
+	_ = kv.WriteBack([]uint64{}, changes)
 
 	value, _ := kv.SilentGet("disk")
 	if !reflect.DeepEqual([]byte("solid state drive"), value) {

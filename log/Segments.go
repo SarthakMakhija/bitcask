@@ -76,25 +76,26 @@ func (segments *Segments[Key]) ReadFull(fileId uint64, keyMapper func([]byte) Ke
 	return nil, errors.New(fmt.Sprintf("Invalid file id %v", fileId))
 }
 
-func (segments *Segments[Key]) ReadPairOfInactiveSegments(keyMapper func([]byte) Key) ([][]*MappedStoredEntry[Key], error) {
+func (segments *Segments[Key]) ReadPairOfInactiveSegments(keyMapper func([]byte) Key) ([]uint64, [][]*MappedStoredEntry[Key], error) {
 	if len(segments.inactiveSegments) < 2 {
-		return nil, errors.New(fmt.Sprintf("Size of inactive segments is less than 2, actual size is %v", len(segments.inactiveSegments)))
+		return nil, nil, errors.New(fmt.Sprintf("Size of inactive segments is less than 2, actual size is %v", len(segments.inactiveSegments)))
 	}
 
 	index := 0
-	contents := make([][]*MappedStoredEntry[Key], 2)
+	contents, fileIds := make([][]*MappedStoredEntry[Key], 2), make([]uint64, 2)
 	for _, segment := range segments.inactiveSegments {
 		if index >= 2 {
 			break
 		}
 		entries, err := segment.readFull(keyMapper)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		contents[index] = entries
+		fileIds[index] = segment.fileId
 		index = index + 1
 	}
-	return contents, nil
+	return fileIds, contents, nil
 }
 
 func (segments *Segments[Key]) WriteBack(changes map[Key]*MappedStoredEntry[Key]) ([]*WriteBackResponse[Key], error) {
@@ -132,6 +133,16 @@ func (segments *Segments[Key]) RemoveActive() {
 func (segments *Segments[Key]) RemoveAllInactive() {
 	for _, segment := range segments.inactiveSegments {
 		segment.remove()
+	}
+}
+
+func (segments *Segments[Key]) Remove(fileIds []uint64) {
+	for _, fileId := range fileIds {
+		segment, ok := segments.inactiveSegments[fileId]
+		if ok {
+			segment.remove()
+			delete(segments.inactiveSegments, fileId)
+		}
 	}
 }
 

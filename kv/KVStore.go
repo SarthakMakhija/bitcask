@@ -74,17 +74,17 @@ func (kv *KVStore[Key]) Get(key Key) ([]byte, error) {
 	return nil, errors.New(fmt.Sprintf("Key %v does not exist", key))
 }
 
-func (kv *KVStore[Key]) ReadPairOfInactiveSegment(keyMapper func([]byte) Key) ([][]*log.MappedStoredEntry[Key], error) {
+func (kv *KVStore[Key]) ReadPairOfInactiveSegment(keyMapper func([]byte) Key) ([]uint64, [][]*log.MappedStoredEntry[Key], error) {
 	return kv.segments.ReadPairOfInactiveSegments(keyMapper)
 }
 
-func (kv *KVStore[Key]) WriteBack(changes map[Key]*log.MappedStoredEntry[Key]) error {
+func (kv *KVStore[Key]) WriteBack(fileIds []uint64, changes map[Key]*log.MappedStoredEntry[Key]) error {
 	writeBackResponses, err := kv.segments.WriteBack(changes)
 	if err != nil {
 		return err
 	}
 	kv.keyDirectory.BulkUpdate(writeBackResponses)
-	//TODO: Delete old files and remove those file ids from inactive segment map
+	kv.segments.Remove(fileIds)
 	return nil
 }
 

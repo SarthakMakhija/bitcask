@@ -87,7 +87,7 @@ func TestAttemptsToReadAPairOfInactiveSegmentsWhenInActiveSegmentsAreLessThan2(t
 
 	_, _ = segments.Append("topic", []byte("microservices"))
 
-	_, err := segments.ReadPairOfInactiveSegments(func(key []byte) serializableKey {
+	_, _, err := segments.ReadPairOfInactiveSegments(func(key []byte) serializableKey {
 		return serializableKey(key)
 	})
 	if err == nil {
@@ -106,7 +106,7 @@ func TestReadsAPairOfInactiveSegmentsFull(t *testing.T) {
 	_, _ = segments.Append("diskType", []byte("solid state drive"))
 	_, _ = segments.Append("engine", []byte("bitcask"))
 
-	pair, _ := segments.ReadPairOfInactiveSegments(func(key []byte) serializableKey {
+	_, pair, _ := segments.ReadPairOfInactiveSegments(func(key []byte) serializableKey {
 		return serializableKey(key)
 	})
 
@@ -179,4 +179,27 @@ func allInactiveSegmentsKeys(segments *Segments[serializableKey]) []serializable
 		return allKeys[i] < allKeys[j]
 	})
 	return allKeys
+}
+
+func TestRemoveInactiveSegmentById(t *testing.T) {
+	segments, _ := NewSegments[serializableKey](".", 8, clock.NewSystemClock())
+	defer func() {
+		segments.RemoveActive()
+		segments.RemoveAllInactive()
+	}()
+
+	appendEntryResponseTopic, _ := segments.Append("topic", []byte("microservices"))
+	_, _ = segments.Append("diskType", []byte("solid state drive"))
+	_, _ = segments.Append("databaseType", []byte("distributed"))
+
+	_, ok := segments.inactiveSegments[appendEntryResponseTopic.FileId]
+	if !ok {
+		t.Fatalf("Expected %v to be an inactive segment but was not", appendEntryResponseTopic.FileId)
+	}
+	segments.Remove([]uint64{appendEntryResponseTopic.FileId})
+
+	_, ok = segments.inactiveSegments[appendEntryResponseTopic.FileId]
+	if ok {
+		t.Fatalf("Expected %v to not be an inactive segment but was", appendEntryResponseTopic.FileId)
+	}
 }

@@ -122,3 +122,26 @@ func TestNewSegmentByReadingFull(t *testing.T) {
 		t.Fatalf("Expected value to be %v, received %v", "ssd", string(entries[1].Value))
 	}
 }
+
+func TestNewSegmentAfterStoppingWrites(t *testing.T) {
+	segment, _ := NewSegment[serializableKey](2, ".")
+	defer func() {
+		segment.remove()
+	}()
+
+	appendEntryResponse, _ := segment.append(NewEntry[serializableKey]("topic", []byte("microservices"), clock.NewSystemClock()))
+	segment.stopWrites()
+
+	storedEntry, _ := segment.read(appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
+	if string(storedEntry.Key) != "topic" {
+		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
+	}
+	if string(storedEntry.Value) != "microservices" {
+		t.Fatalf("Expected value to be %v, received %v", "microservices", string(storedEntry.Value))
+	}
+
+	_, err := segment.append(NewEntry[serializableKey]("after-stopping", []byte("true"), clock.NewSystemClock()))
+	if err == nil {
+		t.Fatalf("Expected error while writing to the segment after it was write closed but no error was received")
+	}
+}

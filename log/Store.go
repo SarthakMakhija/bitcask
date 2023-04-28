@@ -67,6 +67,10 @@ func (store *Store) sync() {
 	store.writer.Sync()
 }
 
+func (store *Store) stopWrites() {
+	store.writer.Close()
+}
+
 func (store *Store) remove() {
 	_ = os.RemoveAll(store.writer.Name())
 }

@@ -88,6 +88,10 @@ func (segment *Segment[Key]) sync() {
 	segment.store.sync()
 }
 
+func (segment *Segment[Key]) stopWrites() {
+	segment.store.stopWrites()
+}
+
 func (segment *Segment[Key]) remove() {
 	segment.store.remove()
 }

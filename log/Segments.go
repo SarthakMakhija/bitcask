@@ -104,6 +104,7 @@ func (segments *Segments[Key]) RemoveAllInactive() {
 
 func (segments *Segments[Key]) maybeRolloverSegment() error {
 	if segments.activeSegment.sizeInBytes() >= int64(segments.maxSegmentSizeBytes) {
+		segments.activeSegment.stopWrites()
 		segment, err := NewSegment[Key](segments.fileIdGenerator.Next(), segments.directory)
 		if err != nil {
 			return err

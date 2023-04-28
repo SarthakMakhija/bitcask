@@ -121,3 +121,26 @@ func TestReadsTheCompleteFile(t *testing.T) {
 		t.Fatalf("Expected the remaining part to be %v, received %v", contentStorage, string(contents[len(contentAppendOnly):]))
 	}
 }
+
+func TestStopsWrites(t *testing.T) {
+	file, _ := os.CreateTemp(".", "append_only")
+	store, _ := NewStore(file.Name())
+	defer func() {
+		_ = os.RemoveAll(file.Name())
+	}()
+
+	content := "append-only-log"
+	_, _ = store.append([]byte(content))
+
+	store.stopWrites()
+
+	_, err := store.append([]byte("stop-writes"))
+	if err == nil {
+		t.Fatalf("Expected error while writing to store after it was write closed but no error was received")
+	}
+
+	received, _ := store.readFull()
+	if string(received) != content {
+		t.Fatalf("Expected content to be %v, received %v", content, string(received))
+	}
+}

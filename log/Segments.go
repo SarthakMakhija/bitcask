@@ -99,7 +99,7 @@ func (segments *Segments[Key]) WriteBackInactive(changes map[Key]*MappedStoredEn
 	}
 	segments.inactiveSegments[segment.fileId] = segment
 	for key, value := range changes {
-		_, err := segment.append(NewEntry(key, value.Value, segments.clock))
+		_, err := segment.append(NewEntryPreservingTimestamp(key, value.Value, value.Timestamp, segments.clock))
 		if err != nil {
 			return err
 		}

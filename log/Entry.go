@@ -20,7 +20,7 @@ type valueReference struct {
 type Entry[Key config.Serializable] struct {
 	key       Key
 	value     valueReference
-	timestamp int
+	timestamp uint32
 	clock     clock.Clock
 }
 
@@ -33,7 +33,7 @@ func NewEntry[Key config.Serializable](key Key, value []byte, clock clock.Clock)
 	}
 }
 
-func NewEntryPreservingTimestamp[Key config.Serializable](key Key, value []byte, ts int, clock clock.Clock) *Entry[Key] {
+func NewEntryPreservingTimestamp[Key config.Serializable](key Key, value []byte, ts uint32, clock clock.Clock) *Entry[Key] {
 	return &Entry[Key]{
 		key:       key,
 		value:     valueReference{value: value, tombstone: 0},
@@ -61,7 +61,7 @@ func (entry *Entry[Key]) encode() []byte {
 	if entry.timestamp == 0 {
 		littleEndian.PutUint32(encoded, uint32(entry.clock.Now()))
 	} else {
-		littleEndian.PutUint32(encoded, uint32(entry.timestamp))
+		littleEndian.PutUint32(encoded, entry.timestamp)
 	}
 	offset = offset + reservedTimestampSize
 

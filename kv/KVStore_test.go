@@ -141,6 +141,30 @@ func TestReadsAPairOfInactiveSegments(t *testing.T) {
 	}
 }
 
+func TestReadsAllInactiveSegments(t *testing.T) {
+	config := bitCaskConfig.NewConfig(".", 8, 16)
+	kv, _ := NewKVStore[serializableKey](config)
+	defer kv.ClearLog()
+
+	_ = kv.Put("topic", []byte("microservices"))
+	_ = kv.Put("diskType", []byte("solid state drive"))
+	_ = kv.Put("engine", []byte("bitcask"))
+
+	_, pair, _ := kv.ReadAllInactiveSegments(func(key []byte) serializableKey {
+		return serializableKey(key)
+	})
+
+	entries := pair[0]
+	if entries[0].Key != "topic" && entries[0].Key != "diskType" {
+		t.Fatalf("Expected key to be either of %v | %v, received %v", "topic", "diskType", entries[0].Key)
+	}
+
+	otherEntries := pair[1]
+	if otherEntries[0].Key != "topic" && otherEntries[0].Key != "diskType" {
+		t.Fatalf("Expected other key to be either of %v | %v, received %v", "topic", "diskType", entries[0].Key)
+	}
+}
+
 func TestWriteBacks(t *testing.T) {
 	config := bitCaskConfig.NewConfig(".", 8, 16)
 	kv, _ := NewKVStore[serializableKey](config)

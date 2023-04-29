@@ -11,9 +11,9 @@ func TestMergeSegmentsWithUpdate(t *testing.T) {
 	store, _ := kv.NewKVStore[serializableKey](config)
 	defer store.ClearLog()
 
-	worker := NewWorker(store, 2, func(key []byte) serializableKey {
+	worker := NewWorker(store, bitCaskConfig.NewMergeConfig(2, func(key []byte) serializableKey {
 		return serializableKey(key)
-	})
+	}))
 
 	_ = store.Put("topic", []byte("microservices"))
 	_ = store.Put("topic", []byte("bitcask"))
@@ -32,9 +32,9 @@ func TestMergeSegmentsWithDeletion(t *testing.T) {
 	store, _ := kv.NewKVStore[serializableKey](config)
 	defer store.ClearLog()
 
-	worker := NewWorker(store, 2, func(key []byte) serializableKey {
+	worker := NewWorker(store, bitCaskConfig.NewMergeConfig(2, func(key []byte) serializableKey {
 		return serializableKey(key)
-	})
+	}))
 
 	_ = store.Put("topic", []byte("microservices"))
 	_ = store.Delete("topic")
@@ -53,9 +53,9 @@ func TestMergeMoreThan2Segments(t *testing.T) {
 	store, _ := kv.NewKVStore[serializableKey](config)
 	defer store.ClearLog()
 
-	worker := NewWorker(store, 3, func(key []byte) serializableKey {
+	worker := NewWorker(store, bitCaskConfig.NewMergeConfig(3, func(key []byte) serializableKey {
 		return serializableKey(key)
-	})
+	}))
 
 	_ = store.Put("topic", []byte("microservices"))
 	_ = store.Put("disk", []byte("ssd"))

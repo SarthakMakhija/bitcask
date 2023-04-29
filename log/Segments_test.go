@@ -104,6 +104,32 @@ func TestReadsAPairOfInactiveSegmentsFull(t *testing.T) {
 	}
 }
 
+func TestReadsAllInactiveSegmentsFull(t *testing.T) {
+	segments, _ := NewSegments[serializableKey](".", 8, clock.NewSystemClock())
+	defer func() {
+		segments.RemoveActive()
+		segments.RemoveAllInactive()
+	}()
+
+	_, _ = segments.Append("topic", []byte("microservices"))
+	_, _ = segments.Append("diskType", []byte("solid state drive"))
+	_, _ = segments.Append("engine", []byte("bitcask"))
+
+	_, pair, _ := segments.ReadAllInactiveSegments(func(key []byte) serializableKey {
+		return serializableKey(key)
+	})
+
+	entries := pair[0]
+	if entries[0].Key != "topic" && entries[0].Key != "diskType" {
+		t.Fatalf("Expected key to be either of %v | %v, received %v", "topic", "diskType", entries[0].Key)
+	}
+
+	otherEntries := pair[1]
+	if otherEntries[0].Key != "topic" && otherEntries[0].Key != "diskType" {
+		t.Fatalf("Expected other key to be either of %v | %v, received %v", "topic", "diskType", entries[0].Key)
+	}
+}
+
 func TestWriteBackInvolvingRollover(t *testing.T) {
 	segments, _ := NewSegments[serializableKey](".", 8, clock.NewSystemClock())
 	defer func() {
@@ -148,22 +174,6 @@ func TestWriteBackNotInvolvingRollover(t *testing.T) {
 	}
 }
 
-func allInactiveSegmentsKeys(segments *Segments[serializableKey]) []serializableKey {
-	var allKeys []serializableKey
-	for _, segment := range segments.inactiveSegments {
-		contents, _ := segment.readFull(func(key []byte) serializableKey {
-			return serializableKey(key)
-		})
-		for _, content := range contents {
-			allKeys = append(allKeys, content.Key)
-		}
-	}
-	sort.SliceStable(allKeys, func(i, j int) bool {
-		return allKeys[i] < allKeys[j]
-	})
-	return allKeys
-}
-
 func TestRemoveInactiveSegmentById(t *testing.T) {
 	segments, _ := NewSegments[serializableKey](".", 8, clock.NewSystemClock())
 	defer func() {
@@ -185,4 +195,20 @@ func TestRemoveInactiveSegmentById(t *testing.T) {
 	if ok {
 		t.Fatalf("Expected %v to not be an inactive segment but was", appendEntryResponseTopic.FileId)
 	}
+}
+
+func allInactiveSegmentsKeys(segments *Segments[serializableKey]) []serializableKey {
+	var allKeys []serializableKey
+	for _, segment := range segments.inactiveSegments {
+		contents, _ := segment.readFull(func(key []byte) serializableKey {
+			return serializableKey(key)
+		})
+		for _, content := range contents {
+			allKeys = append(allKeys, content.Key)
+		}
+	}
+	sort.SliceStable(allKeys, func(i, j int) bool {
+		return allKeys[i] < allKeys[j]
+	})
+	return allKeys
 }

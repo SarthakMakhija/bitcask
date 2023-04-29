@@ -2,7 +2,6 @@ package kv
 
 import (
 	"bitcask/config"
-	"bitcask/keydir"
 	"bitcask/log"
 	"errors"
 	"fmt"
@@ -10,7 +9,7 @@ import (
 
 type KVStore[Key config.BitCaskKey] struct {
 	segments     *log.Segments[Key]
-	keyDirectory *keydir.KeyDirectory[Key]
+	keyDirectory *KeyDirectory[Key]
 }
 
 func NewKVStore[Key config.BitCaskKey](config *config.Config) (*KVStore[Key], error) {
@@ -20,7 +19,7 @@ func NewKVStore[Key config.BitCaskKey](config *config.Config) (*KVStore[Key], er
 	}
 	return &KVStore[Key]{
 		segments:     segments,
-		keyDirectory: keydir.NewKeyDirectory[Key](config.KeyDirectoryCapacity()),
+		keyDirectory: NewKeyDirectory[Key](config.KeyDirectoryCapacity()),
 	}, nil
 }
 
@@ -29,7 +28,7 @@ func (kv *KVStore[Key]) Put(key Key, value []byte) error {
 	if err != nil {
 		return err
 	}
-	kv.keyDirectory.Put(key, keydir.NewEntryFrom(appendEntryResponse))
+	kv.keyDirectory.Put(key, NewEntryFrom(appendEntryResponse))
 	return nil
 }
 
@@ -38,7 +37,7 @@ func (kv *KVStore[Key]) Update(key Key, value []byte) error {
 	if err != nil {
 		return err
 	}
-	kv.keyDirectory.Update(key, keydir.NewEntryFrom(appendEntryResponse))
+	kv.keyDirectory.Update(key, NewEntryFrom(appendEntryResponse))
 	return nil
 }
 

@@ -7,12 +7,6 @@ import (
 	"testing"
 )
 
-type serializableKey string
-
-func (key serializableKey) Serialize() []byte {
-	return []byte(key)
-}
-
 func TestPutAndDoASilentGet(t *testing.T) {
 	config := bitCaskConfig.NewConfig(".", 32, 16)
 	kv, _ := NewKVStore[serializableKey](config)

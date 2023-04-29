@@ -1,4 +1,4 @@
-package keydir
+package kv
 
 import (
 	"bitcask/log"

@@ -3,7 +3,7 @@ package log
 import (
 	"bitcask/clock"
 	"bitcask/config"
-	"bitcask/log/id"
+	"bitcask/kv/log/id"
 	"errors"
 	"fmt"
 )
@@ -25,14 +25,14 @@ type WriteBackResponse[K config.BitCaskKey] struct {
 func NewSegments[Key config.BitCaskKey](directory string, maxSegmentSizeBytes uint64, clock clock.Clock) (*Segments[Key], error) {
 	fileIdGenerator := id.NewFileIdGenerator(clock)
 	fileId := fileIdGenerator.Next()
-	segment, err := NewSegment[Key](fileId, directory)
+	activeSegment, err := NewSegment[Key](fileId, directory)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Segments[Key]{
-		activeSegment:       segment,
-		inactiveSegments:    make(map[uint64]*Segment[Key]), //TODO: capacity
+		activeSegment:       activeSegment,
+		inactiveSegments:    make(map[uint64]*Segment[Key]),
 		fileIdGenerator:     fileIdGenerator,
 		clock:               clock,
 		maxSegmentSizeBytes: maxSegmentSizeBytes,

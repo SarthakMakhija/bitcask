@@ -1,6 +1,8 @@
 package kv
 
-import "bitcask/log"
+import (
+	"bitcask/kv/log"
+)
 
 type Entry struct {
 	FileId      uint64

@@ -2,7 +2,7 @@ package kv
 
 import (
 	"bitcask/config"
-	"bitcask/log"
+	"bitcask/kv/log"
 )
 
 type KeyDirectory[Key config.BitCaskKey] struct {
@@ -16,10 +16,6 @@ func NewKeyDirectory[Key config.BitCaskKey](initialCapacity uint64) *KeyDirector
 }
 
 func (keyDirectory *KeyDirectory[Key]) Put(key Key, value *Entry) {
-	keyDirectory.entryByKey[key] = value
-}
-
-func (keyDirectory *KeyDirectory[Key]) Update(key Key, value *Entry) {
 	keyDirectory.entryByKey[key] = value
 }
 

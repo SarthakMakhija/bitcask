@@ -1,7 +1,7 @@
 package merge
 
 import (
-	"bitcask/log"
+	"bitcask/kv/log"
 	"testing"
 )
 

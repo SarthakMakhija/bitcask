@@ -3,7 +3,7 @@ package merge
 import (
 	"bitcask/config"
 	"bitcask/kv"
-	"bitcask/log"
+	"bitcask/kv/log"
 	"time"
 )
 

@@ -2,7 +2,7 @@ package kv
 
 import (
 	bitCaskConfig "bitcask/config"
-	"bitcask/log"
+	"bitcask/kv/log"
 	"reflect"
 	"testing"
 )

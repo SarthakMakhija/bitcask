@@ -1,7 +1,7 @@
 package kv
 
 import (
-	"bitcask/log"
+	"bitcask/kv/log"
 	"testing"
 )
 

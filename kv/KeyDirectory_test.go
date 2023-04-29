@@ -1,7 +1,7 @@
 package kv
 
 import (
-	"bitcask/log"
+	log2 "bitcask/kv/log"
 	"reflect"
 	"testing"
 )
@@ -19,22 +19,6 @@ func TestPutsAKeyInKeyDirectory(t *testing.T) {
 	entry, _ := keyDirectory.Get("topic")
 	if !reflect.DeepEqual(NewEntry(1, 10, 20), entry) {
 		t.Fatalf("Expected %v, received %v from key directory", NewEntry(1, 10, 20), entry)
-	}
-}
-
-func TestUpdatesAKeyInKeyDirectory(t *testing.T) {
-	keyDirectory := NewKeyDirectory[serializableKey](16)
-	keyDirectory.Put("topic", NewEntry(1, 10, 20))
-
-	entry, _ := keyDirectory.Get("topic")
-	if !reflect.DeepEqual(NewEntry(1, 10, 20), entry) {
-		t.Fatalf("Expected %v, received %v from key directory", NewEntry(1, 10, 20), entry)
-	}
-
-	keyDirectory.Update("topic", NewEntry(2, 20, 40))
-	entry, _ = keyDirectory.Get("topic")
-	if !reflect.DeepEqual(NewEntry(2, 20, 40), entry) {
-		t.Fatalf("Expected %v, received %v from key directory", NewEntry(2, 20, 40), entry)
 	}
 }
 
@@ -65,24 +49,24 @@ func TestGetANonExistentKeyInKeyDirectory(t *testing.T) {
 
 func TestBulkUpdatesKeys(t *testing.T) {
 	keyDirectory := NewKeyDirectory[serializableKey](16)
-	response := &log.WriteBackResponse[serializableKey]{
+	response := &log2.WriteBackResponse[serializableKey]{
 		Key: "topic",
-		AppendEntryResponse: &log.AppendEntryResponse{
+		AppendEntryResponse: &log2.AppendEntryResponse{
 			FileId:      10,
 			Offset:      30,
 			EntryLength: 36,
 		},
 	}
-	otherResponse := &log.WriteBackResponse[serializableKey]{
+	otherResponse := &log2.WriteBackResponse[serializableKey]{
 		Key: "disk",
-		AppendEntryResponse: &log.AppendEntryResponse{
+		AppendEntryResponse: &log2.AppendEntryResponse{
 			FileId:      20,
 			Offset:      40,
 			EntryLength: 46,
 		},
 	}
 
-	keyDirectory.BulkUpdate([]*log.WriteBackResponse[serializableKey]{response, otherResponse})
+	keyDirectory.BulkUpdate([]*log2.WriteBackResponse[serializableKey]{response, otherResponse})
 
 	entry, _ := keyDirectory.Get("topic")
 	if !reflect.DeepEqual(NewEntry(10, 30, 36), entry) {

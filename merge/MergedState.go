@@ -2,7 +2,7 @@ package merge
 
 import (
 	"bitcask/config"
-	"bitcask/log"
+	"bitcask/kv/log"
 )
 
 type MergedState[Key config.BitCaskKey] struct {

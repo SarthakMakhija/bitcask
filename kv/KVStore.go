@@ -2,18 +2,18 @@ package kv
 
 import (
 	"bitcask/config"
-	"bitcask/log"
+	log2 "bitcask/kv/log"
 	"errors"
 	"fmt"
 )
 
 type KVStore[Key config.BitCaskKey] struct {
-	segments     *log.Segments[Key]
+	segments     *log2.Segments[Key]
 	keyDirectory *KeyDirectory[Key]
 }
 
 func NewKVStore[Key config.BitCaskKey](config *config.Config) (*KVStore[Key], error) {
-	segments, err := log.NewSegments[Key](config.Directory(), config.MaxSegmentSizeInBytes(), config.Clock())
+	segments, err := log2.NewSegments[Key](config.Directory(), config.MaxSegmentSizeInBytes(), config.Clock())
 	if err != nil {
 		return nil, err
 	}
@@ -33,12 +33,7 @@ func (kv *KVStore[Key]) Put(key Key, value []byte) error {
 }
 
 func (kv *KVStore[Key]) Update(key Key, value []byte) error {
-	appendEntryResponse, err := kv.appendInLog(key, value)
-	if err != nil {
-		return err
-	}
-	kv.keyDirectory.Update(key, NewEntryFrom(appendEntryResponse))
-	return nil
+	return kv.Put(key, value)
 }
 
 func (kv *KVStore[Key]) Delete(key Key) error {
@@ -73,15 +68,15 @@ func (kv *KVStore[Key]) Get(key Key) ([]byte, error) {
 	return nil, errors.New(fmt.Sprintf("Key %v does not exist", key))
 }
 
-func (kv *KVStore[Key]) ReadInactiveSegments(totalSegments int, keyMapper func([]byte) Key) ([]uint64, [][]*log.MappedStoredEntry[Key], error) {
+func (kv *KVStore[Key]) ReadInactiveSegments(totalSegments int, keyMapper func([]byte) Key) ([]uint64, [][]*log2.MappedStoredEntry[Key], error) {
 	return kv.segments.ReadInactiveSegments(totalSegments, keyMapper)
 }
 
-func (kv *KVStore[Key]) ReadAllInactiveSegments(keyMapper func([]byte) Key) ([]uint64, [][]*log.MappedStoredEntry[Key], error) {
+func (kv *KVStore[Key]) ReadAllInactiveSegments(keyMapper func([]byte) Key) ([]uint64, [][]*log2.MappedStoredEntry[Key], error) {
 	return kv.segments.ReadAllInactiveSegments(keyMapper)
 }
 
-func (kv *KVStore[Key]) WriteBack(fileIds []uint64, changes map[Key]*log.MappedStoredEntry[Key]) error {
+func (kv *KVStore[Key]) WriteBack(fileIds []uint64, changes map[Key]*log2.MappedStoredEntry[Key]) error {
 	writeBackResponses, err := kv.segments.WriteBack(changes)
 	if err != nil {
 		return err
@@ -96,7 +91,7 @@ func (kv *KVStore[Key]) ClearLog() {
 	kv.segments.RemoveAllInactive()
 }
 
-func (kv *KVStore[Key]) appendInLog(key Key, value []byte) (*log.AppendEntryResponse, error) {
+func (kv *KVStore[Key]) appendInLog(key Key, value []byte) (*log2.AppendEntryResponse, error) {
 	appendEntryResponse, err := kv.segments.Append(key, value)
 	if err != nil {
 		return nil, err

@@ -14,11 +14,13 @@ type Worker[Key config.BitCaskKey] struct {
 }
 
 func NewWorker[Key config.BitCaskKey](kvStore *kv.KVStore[Key], config *config.MergeConfig[Key]) *Worker[Key] {
-	return &Worker[Key]{
+	worker := &Worker[Key]{
 		kvStore: kvStore,
 		config:  config,
 		quit:    make(chan struct{}),
 	}
+	worker.start()
+	return worker
 }
 
 func (worker *Worker[Key]) start() {
@@ -58,6 +60,6 @@ func (worker *Worker[Key]) beginMerge() {
 	}
 }
 
-func (worker *Worker[Key]) stop() {
+func (worker *Worker[Key]) Stop() {
 	close(worker.quit)
 }

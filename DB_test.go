@@ -13,9 +13,12 @@ func (key serializableKey) Serialize() []byte {
 }
 
 func TestPutAndDoASilentGet(t *testing.T) {
-	config := config.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
-	defer db.ClearLog()
+	cfg := config.NewConfig[serializableKey](".", 32, 16, config.NewMergeConfig[serializableKey](2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
+	db, _ := NewDB[serializableKey](cfg)
+	defer db.Shutdown()
+	defer db.clearLog()
 
 	_ = db.Put("topic", []byte("microservices"))
 
@@ -27,9 +30,12 @@ func TestPutAndDoASilentGet(t *testing.T) {
 }
 
 func TestSilentGetANonExistentKey(t *testing.T) {
-	config := config.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
-	defer db.ClearLog()
+	cfg := config.NewConfig[serializableKey](".", 32, 16, config.NewMergeConfig[serializableKey](2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
+	db, _ := NewDB[serializableKey](cfg)
+	defer db.Shutdown()
+	defer db.clearLog()
 
 	_, exists := db.SilentGet("non-existing")
 
@@ -39,9 +45,12 @@ func TestSilentGetANonExistentKey(t *testing.T) {
 }
 
 func TestPutAndDoAGet(t *testing.T) {
-	config := config.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
-	defer db.ClearLog()
+	cfg := config.NewConfig[serializableKey](".", 32, 16, config.NewMergeConfig[serializableKey](2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
+	db, _ := NewDB[serializableKey](cfg)
+	defer db.Shutdown()
+	defer db.clearLog()
 
 	_ = db.Put("topic", []byte("microservices"))
 
@@ -53,9 +62,12 @@ func TestPutAndDoAGet(t *testing.T) {
 }
 
 func TestGetANonExistentKey(t *testing.T) {
-	config := config.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
-	defer db.ClearLog()
+	cfg := config.NewConfig[serializableKey](".", 32, 16, config.NewMergeConfig[serializableKey](2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
+	db, _ := NewDB[serializableKey](cfg)
+	defer db.Shutdown()
+	defer db.clearLog()
 
 	value, err := db.Get("non-existing")
 
@@ -65,9 +77,12 @@ func TestGetANonExistentKey(t *testing.T) {
 }
 
 func TestUpdateAndDoASilentGet(t *testing.T) {
-	config := config.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
-	defer db.ClearLog()
+	cfg := config.NewConfig[serializableKey](".", 32, 16, config.NewMergeConfig[serializableKey](2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
+	db, _ := NewDB[serializableKey](cfg)
+	defer db.Shutdown()
+	defer db.clearLog()
 
 	_ = db.Put("topic", []byte("microservices"))
 	_ = db.Update("topic", []byte("storage engine"))
@@ -80,9 +95,12 @@ func TestUpdateAndDoASilentGet(t *testing.T) {
 }
 
 func TestUpdateAndDoAGet(t *testing.T) {
-	config := config.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
-	defer db.ClearLog()
+	cfg := config.NewConfig[serializableKey](".", 32, 16, config.NewMergeConfig[serializableKey](2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
+	db, _ := NewDB[serializableKey](cfg)
+	defer db.Shutdown()
+	defer db.clearLog()
 
 	_ = db.Put("topic", []byte("microservices"))
 	_ = db.Update("topic", []byte("storage engine"))
@@ -95,9 +113,12 @@ func TestUpdateAndDoAGet(t *testing.T) {
 }
 
 func TestDeleteAndDoASilentGet(t *testing.T) {
-	config := config.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
-	defer db.ClearLog()
+	cfg := config.NewConfig[serializableKey](".", 32, 16, config.NewMergeConfig[serializableKey](2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
+	db, _ := NewDB[serializableKey](cfg)
+	defer db.Shutdown()
+	defer db.clearLog()
 
 	_ = db.Put("topic", []byte("microservices"))
 	_ = db.Delete("topic")
@@ -109,9 +130,12 @@ func TestDeleteAndDoASilentGet(t *testing.T) {
 }
 
 func TestDeleteAndDoAGet(t *testing.T) {
-	config := config.NewConfig(".", 32, 16)
-	db, _ := NewDB[serializableKey](config)
-	defer db.ClearLog()
+	cfg := config.NewConfig[serializableKey](".", 32, 16, config.NewMergeConfig[serializableKey](2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
+	db, _ := NewDB[serializableKey](cfg)
+	defer db.Shutdown()
+	defer db.clearLog()
 
 	_ = db.Put("topic", []byte("microservices"))
 	_ = db.Delete("topic")

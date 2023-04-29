@@ -14,7 +14,7 @@ type KVStore[Key config.BitCaskKey] struct {
 	lock         sync.RWMutex
 }
 
-func NewKVStore[Key config.BitCaskKey](config *config.Config) (*KVStore[Key], error) {
+func NewKVStore[Key config.BitCaskKey](config *config.Config[Key]) (*KVStore[Key], error) {
 	segments, err := log2.NewSegments[Key](config.Directory(), config.MaxSegmentSizeInBytes(), config.Clock())
 	if err != nil {
 		return nil, err

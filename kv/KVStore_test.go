@@ -8,7 +8,9 @@ import (
 )
 
 func TestPutAndDoASilentGet(t *testing.T) {
-	config := bitCaskConfig.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16, bitCaskConfig.NewMergeConfig(2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -22,7 +24,9 @@ func TestPutAndDoASilentGet(t *testing.T) {
 }
 
 func TestSilentGetANonExistentKey(t *testing.T) {
-	config := bitCaskConfig.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16, bitCaskConfig.NewMergeConfig(2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -34,7 +38,9 @@ func TestSilentGetANonExistentKey(t *testing.T) {
 }
 
 func TestPutAndDoAGet(t *testing.T) {
-	config := bitCaskConfig.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16, bitCaskConfig.NewMergeConfig(2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -48,7 +54,9 @@ func TestPutAndDoAGet(t *testing.T) {
 }
 
 func TestGetANonExistentKey(t *testing.T) {
-	config := bitCaskConfig.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16, bitCaskConfig.NewMergeConfig(2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -60,7 +68,9 @@ func TestGetANonExistentKey(t *testing.T) {
 }
 
 func TestUpdateAndDoASilentGet(t *testing.T) {
-	config := bitCaskConfig.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16, bitCaskConfig.NewMergeConfig(2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -75,7 +85,9 @@ func TestUpdateAndDoASilentGet(t *testing.T) {
 }
 
 func TestUpdateAndDoAGet(t *testing.T) {
-	config := bitCaskConfig.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16, bitCaskConfig.NewMergeConfig(2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -90,7 +102,9 @@ func TestUpdateAndDoAGet(t *testing.T) {
 }
 
 func TestDeleteAndDoASilentGet(t *testing.T) {
-	config := bitCaskConfig.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16, bitCaskConfig.NewMergeConfig(2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -104,7 +118,9 @@ func TestDeleteAndDoASilentGet(t *testing.T) {
 }
 
 func TestDeleteAndDoAGet(t *testing.T) {
-	config := bitCaskConfig.NewConfig(".", 32, 16)
+	config := bitCaskConfig.NewConfig(".", 32, 16, bitCaskConfig.NewMergeConfig(2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -118,7 +134,9 @@ func TestDeleteAndDoAGet(t *testing.T) {
 }
 
 func TestReadsAPairOfInactiveSegments(t *testing.T) {
-	config := bitCaskConfig.NewConfig(".", 8, 16)
+	config := bitCaskConfig.NewConfig(".", 8, 16, bitCaskConfig.NewMergeConfig(2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -142,7 +160,9 @@ func TestReadsAPairOfInactiveSegments(t *testing.T) {
 }
 
 func TestReadsAllInactiveSegments(t *testing.T) {
-	config := bitCaskConfig.NewConfig(".", 8, 16)
+	config := bitCaskConfig.NewConfig(".", 8, 16, bitCaskConfig.NewMergeConfig(2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 
@@ -166,7 +186,9 @@ func TestReadsAllInactiveSegments(t *testing.T) {
 }
 
 func TestWriteBacks(t *testing.T) {
-	config := bitCaskConfig.NewConfig(".", 8, 16)
+	config := bitCaskConfig.NewConfig(".", 8, 16, bitCaskConfig.NewMergeConfig(2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
 	kv, _ := NewKVStore[serializableKey](config)
 	defer kv.ClearLog()
 

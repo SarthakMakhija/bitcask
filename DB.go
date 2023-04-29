@@ -3,19 +3,22 @@ package bitcask
 import (
 	"bitcask/config"
 	"bitcask/kv"
+	"bitcask/merge"
 )
 
 type DB[Key config.BitCaskKey] struct {
 	kvStore *kv.KVStore[Key]
+	worker  *merge.Worker[Key]
 }
 
-func NewDB[Key config.BitCaskKey](config *config.Config) (*DB[Key], error) {
+func NewDB[Key config.BitCaskKey](config *config.Config[Key]) (*DB[Key], error) {
 	kvStore, err := kv.NewKVStore[Key](config)
 	if err != nil {
 		return nil, err
 	}
 	return &DB[Key]{
 		kvStore: kvStore,
+		worker:  merge.NewWorker[Key](kvStore, config.MergeConfig()),
 	}, nil
 }
 
@@ -39,6 +42,10 @@ func (db *DB[Key]) Get(key Key) ([]byte, error) {
 	return db.kvStore.Get(key)
 }
 
-func (db *DB[Key]) ClearLog() {
+func (db *DB[Key]) Shutdown() {
+	db.worker.Stop()
+}
+
+func (db *DB[Key]) clearLog() {
 	db.kvStore.ClearLog()
 }

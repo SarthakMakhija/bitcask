@@ -3,42 +3,58 @@ package config
 import "time"
 
 type MergeConfig[Key BitCaskKey] struct {
-	TotalSegmentsToRead   int
-	ShouldReadAllSegments bool
-	KeyMapper             func([]byte) Key
-	RunMergeEvery         time.Duration
+	totalSegmentsToRead   int
+	shouldReadAllSegments bool
+	keyMapper             func([]byte) Key
+	runMergeEvery         time.Duration
 }
 
 func NewMergeConfig[Key BitCaskKey](totalSegmentsToRead int, keyMapper func([]byte) Key) *MergeConfig[Key] {
 	return &MergeConfig[Key]{
-		TotalSegmentsToRead:   totalSegmentsToRead,
-		ShouldReadAllSegments: false,
-		KeyMapper:             keyMapper,
-		RunMergeEvery:         5 * time.Minute,
+		totalSegmentsToRead:   totalSegmentsToRead,
+		shouldReadAllSegments: false,
+		keyMapper:             keyMapper,
+		runMergeEvery:         5 * time.Minute,
 	}
 }
 
 func NewMergeConfigWithDuration[Key BitCaskKey](totalSegmentsToRead int, runMergeEvery time.Duration, keyMapper func([]byte) Key) *MergeConfig[Key] {
 	return &MergeConfig[Key]{
-		TotalSegmentsToRead:   totalSegmentsToRead,
-		ShouldReadAllSegments: false,
-		KeyMapper:             keyMapper,
-		RunMergeEvery:         runMergeEvery,
+		totalSegmentsToRead:   totalSegmentsToRead,
+		shouldReadAllSegments: false,
+		keyMapper:             keyMapper,
+		runMergeEvery:         runMergeEvery,
 	}
 }
 
 func NewMergeConfigWithAllSegmentsToRead[Key BitCaskKey](keyMapper func([]byte) Key) *MergeConfig[Key] {
 	return &MergeConfig[Key]{
-		ShouldReadAllSegments: true,
-		KeyMapper:             keyMapper,
-		RunMergeEvery:         5 * time.Minute,
+		shouldReadAllSegments: true,
+		keyMapper:             keyMapper,
+		runMergeEvery:         5 * time.Minute,
 	}
 }
 
 func NewMergeConfigWithAllSegmentsToReadEveryFixedDuration[Key BitCaskKey](runMergeEvery time.Duration, keyMapper func([]byte) Key) *MergeConfig[Key] {
 	return &MergeConfig[Key]{
-		ShouldReadAllSegments: true,
-		KeyMapper:             keyMapper,
-		RunMergeEvery:         runMergeEvery,
+		shouldReadAllSegments: true,
+		keyMapper:             keyMapper,
+		runMergeEvery:         runMergeEvery,
 	}
+}
+
+func (m *MergeConfig[Key]) TotalSegmentsToRead() int {
+	return m.totalSegmentsToRead
+}
+
+func (m *MergeConfig[Key]) ShouldReadAllSegments() bool {
+	return m.shouldReadAllSegments
+}
+
+func (m *MergeConfig[Key]) KeyMapper() func([]byte) Key {
+	return m.keyMapper
+}
+
+func (m *MergeConfig[Key]) RunMergeEvery() time.Duration {
+	return m.runMergeEvery
 }

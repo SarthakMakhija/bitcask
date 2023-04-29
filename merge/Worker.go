@@ -22,7 +22,7 @@ func NewWorker[Key config.BitCaskKey](kvStore *kv.KVStore[Key], config *config.M
 }
 
 func (worker *Worker[Key]) start() {
-	ticker := time.NewTicker(worker.config.RunMergeEvery)
+	ticker := time.NewTicker(worker.config.RunMergeEvery())
 	go func() {
 		for {
 			select {
@@ -41,10 +41,10 @@ func (worker *Worker[Key]) beginMerge() {
 	var segments [][]*log.MappedStoredEntry[Key]
 	var err error
 
-	if worker.config.ShouldReadAllSegments {
-		fileIds, segments, err = worker.kvStore.ReadAllInactiveSegments(worker.config.KeyMapper)
+	if worker.config.ShouldReadAllSegments() {
+		fileIds, segments, err = worker.kvStore.ReadAllInactiveSegments(worker.config.KeyMapper())
 	} else {
-		fileIds, segments, err = worker.kvStore.ReadInactiveSegments(worker.config.TotalSegmentsToRead, worker.config.KeyMapper)
+		fileIds, segments, err = worker.kvStore.ReadInactiveSegments(worker.config.TotalSegmentsToRead(), worker.config.KeyMapper())
 	}
 
 	if err == nil && len(segments) >= 2 {

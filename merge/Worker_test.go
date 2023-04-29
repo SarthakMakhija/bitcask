@@ -4,6 +4,7 @@ import (
 	bitCaskConfig "bitcask/config"
 	kv "bitcask/kv"
 	"testing"
+	"time"
 )
 
 func TestMergeSegmentsWithUpdate(t *testing.T) {
@@ -19,7 +20,7 @@ func TestMergeSegmentsWithUpdate(t *testing.T) {
 	_ = store.Put("topic", []byte("bitcask"))
 	_ = store.Put("disk", []byte("ssd"))
 
-	worker.begin()
+	worker.beginMerge()
 
 	value, _ := store.Get("topic")
 	if string(value) != "bitcask" {
@@ -40,7 +41,7 @@ func TestMergeSegmentsWithDeletion(t *testing.T) {
 	_ = store.Delete("topic")
 	_ = store.Put("ssd", []byte("disk"))
 
-	worker.begin()
+	worker.beginMerge()
 
 	value, ok := store.SilentGet("topic")
 	if ok {
@@ -62,7 +63,7 @@ func TestMergeMoreThan2Segments(t *testing.T) {
 	_ = store.Put("engine", []byte("bitcask"))
 	_ = store.Put("language", []byte("go"))
 
-	worker.begin()
+	worker.beginMerge()
 
 	value, _ := store.Get("topic")
 	if string(value) != "microservices" {
@@ -73,6 +74,28 @@ func TestMergeMoreThan2Segments(t *testing.T) {
 		t.Fatalf("Expected value to be %v, received %v", "ssd", string(value))
 	}
 	value, _ = store.Get("engine")
+	if string(value) != "bitcask" {
+		t.Fatalf("Expected value to be %v, received %v", "bitcask", string(value))
+	}
+}
+
+func TestMergeSegmentsOnSchedule(t *testing.T) {
+	config := bitCaskConfig.NewConfig(".", 8, 16)
+	store, _ := kv.NewKVStore[serializableKey](config)
+	defer store.ClearLog()
+
+	_ = store.Put("topic", []byte("microservices"))
+	_ = store.Put("topic", []byte("bitcask"))
+	_ = store.Put("disk", []byte("ssd"))
+
+	worker := NewWorker(store, bitCaskConfig.NewMergeConfigWithAllSegmentsToReadEveryFixedDuration(1*time.Second, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
+
+	time.Sleep(3 * time.Second)
+	worker.stop()
+
+	value, _ := store.Get("topic")
 	if string(value) != "bitcask" {
 		t.Fatalf("Expected value to be %v, received %v", "bitcask", string(value))
 	}

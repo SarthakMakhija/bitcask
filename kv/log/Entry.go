@@ -130,8 +130,8 @@ func decodeMulti[Key config.BitCaskKey](content []byte, keyMapper func([]byte) K
 //
 // In order to perform `decode`, the code reads the first 4 bytes to get the timestamp, next 4 bytes to get the key size, next 4 bytes to get the value size
 // Note: the value size is the size including the length of the byte slice provided by the user and one byte for the tombstone marker
-// Next keySize bytes return the actual key, followed by next valueSize bytes which return the actual value.
-// DeletedFlag is determined by taking the last byte from the value byte slice and performing an AND operation with 0x01.
+// Reading further from the offset to the offset+keySize return the actual key, followed by next read from offset to offset+valueSize which returns the actual value.
+// DeletedFlag is determined by taking the last byte from the `value` byte slice and performing an AND operation with 0x01.
 func decodeFrom(content []byte, offset uint32) (*StoredEntry, uint32) {
 	timestamp := littleEndian.Uint32(content)
 	offset = offset + reservedTimestampSize

@@ -63,13 +63,12 @@ func (worker *Worker[Key]) start() {
 
 // KeyDirectory contains K1 pointing to the offset of K1 in the segment file F2.
 // With this background, let's consider that the merge process starts, and it reads the contents of F1 and F2 and performs a merge.
-// The merge writes the key K1 with its new value V2 and timestamp T2 in a new file F3, and deleted file F1 and F2.
+// The merge writes the key K1 with its new value V2 and timestamp T2 in a new file F3, and deletes files F1 and F2.
 
 //  Segment file F3
 //	┌───────────┬──────────┬────────────┬─────┬───────┐
 //	│ T2        │ key_size │ value_size │ K1  │ V2    │
 //	└───────────┴──────────┴────────────┴─────┴───────┘
-
 // The moment merge process is done, the state of Key K1 needs to be updated in the KeyDirectory to point to the new offset in the new file.
 func (worker *Worker[Key]) beginMerge() {
 	var fileIds []uint64

@@ -1,5 +1,5 @@
 # bitcask - Disk based Log Structured Hash Table Store
-This is golang based implementation of Riak's [bitcask](https://riak.com/assets/bitcask-intro.pdf) paper. This project is for educational purposes only. The idea is to 
+This is golang based implementation of Riak's [bitcask](https://riak.com/assets/bitcask-intro.pdf) paper. This project is for *educational* purposes only. The idea is to 
 provide a reference implementation of bitcask to help anyone interested in the area of storage engine understand the basics of building a persistent key-value storage engine.
 
 [![bitcask](https://github.com/SarthakMakhija/bitcask/actions/workflows/build.yml/badge.svg)](https://github.com/SarthakMakhija/bitcask/actions/workflows/build.yml)

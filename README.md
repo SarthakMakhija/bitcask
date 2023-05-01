@@ -44,6 +44,9 @@ Every update and delete operation is also an append operation to a data file. Th
 
 # Code comments
 The implementation has code comments to help the readers understand the reasons behind various decisions and explain the working of the bitcask model.
+Sample comment:
+
+<img width="1613" alt="Screenshot 2023-05-01 at 10 13 12 PM" src="https://user-images.githubusercontent.com/21108320/235490077-f47d3c12-d38f-4363-bea5-28cf5bddbba3.png">
 
 # Reference
 [bitcask introduction](https://riak.com/assets/bitcask-intro.pdf)

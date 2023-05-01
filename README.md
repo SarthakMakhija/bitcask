@@ -42,5 +42,8 @@ This read operation involves performing a `Seek` to the offset in the file and t
 ### Compaction
 Every update and delete operation is also an append operation to a data file. This model may use up a lot of space over time, since we just write out new values without touching the old ones. A process for compaction that is referred to as "merging" solves this. The merge process iterates over all non-active (i.e. immutable) files and produces as output a set of data files containing only the latest values of each present key.
 
+# Code comments
+The implementation has code comments to help the readers understand the reasons behind various decisions and explain the working of the bitcask model.
+
 # Reference
 [bitcask introduction](https://riak.com/assets/bitcask-intro.pdf)

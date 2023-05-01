@@ -43,18 +43,18 @@ func NewMergeConfigWithAllSegmentsToReadEveryFixedDuration[Key BitCaskKey](runMe
 	}
 }
 
-func (m *MergeConfig[Key]) TotalSegmentsToRead() int {
-	return m.totalSegmentsToRead
+func (mergeConfig *MergeConfig[Key]) TotalSegmentsToRead() int {
+	return mergeConfig.totalSegmentsToRead
 }
 
-func (m *MergeConfig[Key]) ShouldReadAllSegments() bool {
-	return m.shouldReadAllSegments
+func (mergeConfig *MergeConfig[Key]) ShouldReadAllSegments() bool {
+	return mergeConfig.shouldReadAllSegments
 }
 
-func (m *MergeConfig[Key]) KeyMapper() func([]byte) Key {
-	return m.keyMapper
+func (mergeConfig *MergeConfig[Key]) KeyMapper() func([]byte) Key {
+	return mergeConfig.keyMapper
 }
 
-func (m *MergeConfig[Key]) RunMergeEvery() time.Duration {
-	return m.runMergeEvery
+func (mergeConfig *MergeConfig[Key]) RunMergeEvery() time.Duration {
+	return mergeConfig.runMergeEvery
 }

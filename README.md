@@ -4,6 +4,8 @@ provide a reference implementation of bitcask to help anyone interested in the a
 
 [![bitcask](https://github.com/SarthakMakhija/bitcask/actions/workflows/build.yml/badge.svg)](https://github.com/SarthakMakhija/bitcask/actions/workflows/build.yml)
 
+![bitcask](https://user-images.githubusercontent.com/21108320/235445730-4ed5e92c-b459-4e11-b7fd-6640251b4112.png)
+
 # Features
 - Low latency for reads and writes
 - High throughput

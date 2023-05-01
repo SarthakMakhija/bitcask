@@ -18,12 +18,13 @@ provide a reference implementation of bitcask to help anyone interested in the a
 - The implementation does not support range queries
 - The implementation does not support hint files
 - RAM usage is high because all the keys are stored in an in-memory hashmap
+- Too many open file handles at the OS end
 
 # Overall idea
 
 ### Write operations
 Every write operation (`put(key, value)`, `update(key,value)` and `delete(key)`) goes in an append-only data file.
-At any moment, one file is "active" file for writing. When that file meets a size threshold it will be closed for writing and a new active file will be created.
+At any moment, one file is "active" for writing. When that file meets a size threshold it will be closed for writing and a new active file will be created.
 Once a file is closed, it is considered immutable and will never be opened for writing again. However, it will still be used for reading.
 
 All the entries in the data file follow a fixed structure:
@@ -39,9 +40,7 @@ The `get` operation performs a lookup in the hashmap and get an `Entry`. If the 
 This read operation involves performing a `Seek` to the offset in the file and then reading the entire entry `([]byte)` identified by the entry length. After the entry is read, it is decoded to get the value. 
 
 ### Compaction
-Every update and delete operation is also an append operation to a data file. This model may use up a lot of space over time, since we just write out new values without touching the old ones. 
-A process for compaction that is referred to as "merging" solves this. The merge process iterates over all non-active (i.e. immutable) files and produces as output a set of data files containing only
-the latest values of each present key.
+Every update and delete operation is also an append operation to a data file. This model may use up a lot of space over time, since we just write out new values without touching the old ones. A process for compaction that is referred to as "merging" solves this. The merge process iterates over all non-active (i.e. immutable) files and produces as output a set of data files containing only the latest values of each present key.
 
 # Reference
 [bitcask introduction](https://riak.com/assets/bitcask-intro.pdf)

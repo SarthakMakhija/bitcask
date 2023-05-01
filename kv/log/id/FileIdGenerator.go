@@ -4,15 +4,15 @@ import (
 	"bitcask/clock"
 )
 
-type FileIdGenerator struct {
+type TimestampBasedFileIdGenerator struct {
 	clock clock.Clock
 }
 
-func NewFileIdGenerator(clock clock.Clock) *FileIdGenerator {
-	return &FileIdGenerator{clock: clock}
+func NewTimestampBasedFileIdGenerator(clock clock.Clock) *TimestampBasedFileIdGenerator {
+	return &TimestampBasedFileIdGenerator{clock: clock}
 }
 
 // Next TODO: concurrency
-func (generator *FileIdGenerator) Next() uint64 {
+func (generator *TimestampBasedFileIdGenerator) Next() uint64 {
 	return uint64(generator.clock.Now())
 }

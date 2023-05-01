@@ -11,7 +11,7 @@ import (
 type Segments[Key config.BitCaskKey] struct {
 	activeSegment       *Segment[Key]
 	inactiveSegments    map[uint64]*Segment[Key]
-	fileIdGenerator     *id.FileIdGenerator
+	fileIdGenerator     *id.TimestampBasedFileIdGenerator
 	clock               clock.Clock
 	maxSegmentSizeBytes uint64
 	directory           string
@@ -23,7 +23,7 @@ type WriteBackResponse[K config.BitCaskKey] struct {
 }
 
 func NewSegments[Key config.BitCaskKey](directory string, maxSegmentSizeBytes uint64, clock clock.Clock) (*Segments[Key], error) {
-	fileIdGenerator := id.NewFileIdGenerator(clock)
+	fileIdGenerator := id.NewTimestampBasedFileIdGenerator(clock)
 	fileId := fileIdGenerator.Next()
 	activeSegment, err := NewSegment[Key](fileId, directory)
 	if err != nil {

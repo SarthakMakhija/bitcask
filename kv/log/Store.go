@@ -41,7 +41,7 @@ func (store *Store) append(bytes []byte) (int64, error) {
 	return offset, nil
 }
 
-func (store *Store) read(offset int64, size uint64) ([]byte, error) {
+func (store *Store) read(offset int64, size uint32) ([]byte, error) {
 	_, err := store.reader.Seek(offset, 0)
 	if err != nil {
 		return nil, err

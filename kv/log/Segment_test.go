@@ -13,7 +13,7 @@ func TestNewSegmentWithAnEntry(t *testing.T) {
 
 	appendEntryResponse, _ := segment.append(NewEntry[serializableKey]("topic", []byte("microservices"), clock.NewSystemClock()))
 
-	storedEntry, _ := segment.read(appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
+	storedEntry, _ := segment.read(appendEntryResponse.Offset, appendEntryResponse.EntryLength)
 	if string(storedEntry.Key) != "topic" {
 		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
 	}
@@ -34,7 +34,7 @@ func TestNewSegmentWithAnEntryAndPerformSync(t *testing.T) {
 	appendEntryResponse, _ := segment.append(NewEntry[serializableKey]("topic", []byte("microservices"), clock.NewSystemClock()))
 	segment.sync()
 
-	storedEntry, _ := segment.read(appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
+	storedEntry, _ := segment.read(appendEntryResponse.Offset, appendEntryResponse.EntryLength)
 	if string(storedEntry.Key) != "topic" {
 		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
 	}
@@ -52,7 +52,7 @@ func TestNewSegmentWith2Entries(t *testing.T) {
 	_, _ = segment.append(NewEntry[serializableKey]("topic", []byte("microservices"), clock.NewSystemClock()))
 	appendEntryResponseDisk, _ := segment.append(NewEntry[serializableKey]("disk", []byte("ssd"), clock.NewSystemClock()))
 
-	storedEntry, _ := segment.read(appendEntryResponseDisk.Offset, uint64(appendEntryResponseDisk.EntryLength))
+	storedEntry, _ := segment.read(appendEntryResponseDisk.Offset, appendEntryResponseDisk.EntryLength)
 	if string(storedEntry.Key) != "disk" {
 		t.Fatalf("Expected key to be %v, received %v", "disk", string(storedEntry.Key))
 	}
@@ -86,7 +86,7 @@ func TestNewSegmentWithADeletedEntry(t *testing.T) {
 
 	appendEntryResponse, _ := segment.append(NewDeletedEntry[serializableKey]("topic", clock.NewSystemClock()))
 
-	storedEntry, _ := segment.read(appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
+	storedEntry, _ := segment.read(appendEntryResponse.Offset, appendEntryResponse.EntryLength)
 	if string(storedEntry.Key) != "topic" {
 		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
 	}
@@ -132,7 +132,7 @@ func TestNewSegmentAfterStoppingWrites(t *testing.T) {
 	appendEntryResponse, _ := segment.append(NewEntry[serializableKey]("topic", []byte("microservices"), clock.NewSystemClock()))
 	segment.stopWrites()
 
-	storedEntry, _ := segment.read(appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
+	storedEntry, _ := segment.read(appendEntryResponse.Offset, appendEntryResponse.EntryLength)
 	if string(storedEntry.Key) != "topic" {
 		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
 	}

@@ -7,7 +7,7 @@ import (
 type Entry struct {
 	FileId      uint64
 	Offset      int64
-	EntryLength int
+	EntryLength uint32
 }
 
 type KeyEntryPair[K comparable] struct {
@@ -19,7 +19,7 @@ func NewEntryFrom(response *log.AppendEntryResponse) *Entry {
 	return NewEntry(response.FileId, response.Offset, response.EntryLength)
 }
 
-func NewEntry(fileId uint64, offset int64, entryLength int) *Entry {
+func NewEntry(fileId uint64, offset int64, entryLength uint32) *Entry {
 	return &Entry{
 		FileId:      fileId,
 		Offset:      offset,

@@ -54,7 +54,7 @@ func (segments *Segments[Key]) AppendDeleted(key Key) (*AppendEntryResponse, err
 	return segments.activeSegment.append(NewDeletedEntry[Key](key, segments.clock))
 }
 
-func (segments *Segments[Key]) Read(fileId uint64, offset int64, size uint64) (*StoredEntry, error) {
+func (segments *Segments[Key]) Read(fileId uint64, offset int64, size uint32) (*StoredEntry, error) {
 	if fileId == segments.activeSegment.fileId {
 		return segments.activeSegment.read(offset, size)
 	}

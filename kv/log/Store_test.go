@@ -15,7 +15,7 @@ func TestAppendsToTheStore(t *testing.T) {
 	content := "append-only-log"
 	_, _ = store.append([]byte(content))
 
-	bytes, _ := store.read(0, uint64(len(content)))
+	bytes, _ := store.read(0, uint32(len(content)))
 
 	if string(bytes) != content {
 		t.Fatalf("Expected store content to be %v, received %v", content, string(bytes))
@@ -35,7 +35,7 @@ func TestAppendsMultipleEntriesToTheStore(t *testing.T) {
 	_, _ = store.append([]byte(contentAppendOnly))
 	_, _ = store.append([]byte(contentStorage))
 
-	bytes, _ := store.read(int64(len(contentAppendOnly)), uint64(len(contentStorage)))
+	bytes, _ := store.read(int64(len(contentAppendOnly)), uint32(len(contentStorage)))
 
 	if string(bytes) != contentStorage {
 		t.Fatalf("Expected store content to be %v, received %v", contentStorage, string(bytes))
@@ -75,7 +75,7 @@ func TestAppendsToTheStoreAndPerformsSync(t *testing.T) {
 
 	store.sync()
 
-	bytes, _ := store.read(0, uint64(len(content)))
+	bytes, _ := store.read(0, uint32(len(content)))
 
 	if string(bytes) != content {
 		t.Fatalf("Expected store content to be %v, received %v", content, string(bytes))

@@ -58,7 +58,7 @@ func (kv *KVStore[Key]) SilentGet(key Key) ([]byte, bool) {
 
 	entry, ok := kv.keyDirectory.Get(key)
 	if ok {
-		storedEntry, err := kv.segments.Read(entry.FileId, entry.Offset, uint64(entry.EntryLength))
+		storedEntry, err := kv.segments.Read(entry.FileId, entry.Offset, entry.EntryLength)
 		if err != nil {
 			return nil, false
 		}
@@ -73,7 +73,7 @@ func (kv *KVStore[Key]) Get(key Key) ([]byte, error) {
 
 	entry, ok := kv.keyDirectory.Get(key)
 	if ok {
-		storedEntry, err := kv.segments.Read(entry.FileId, entry.Offset, uint64(entry.EntryLength))
+		storedEntry, err := kv.segments.Read(entry.FileId, entry.Offset, entry.EntryLength)
 		if err != nil {
 			return nil, err
 		}

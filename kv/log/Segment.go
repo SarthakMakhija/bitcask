@@ -24,7 +24,7 @@ type MappedStoredEntry[K config.BitCaskKey] struct {
 type AppendEntryResponse struct {
 	FileId      uint64
 	Offset      int64
-	EntryLength int
+	EntryLength uint32
 }
 
 type Segment[Key config.BitCaskKey] struct {
@@ -60,11 +60,11 @@ func (segment *Segment[Key]) append(entry *Entry[Key]) (*AppendEntryResponse, er
 	return &AppendEntryResponse{
 		FileId:      segment.fileId,
 		Offset:      offset,
-		EntryLength: len(encoded),
+		EntryLength: uint32(len(encoded)),
 	}, nil
 }
 
-func (segment *Segment[Key]) read(offset int64, size uint64) (*StoredEntry, error) {
+func (segment *Segment[Key]) read(offset int64, size uint32) (*StoredEntry, error) {
 	bytes, err := segment.store.read(offset, size)
 	if err != nil {
 		return nil, err

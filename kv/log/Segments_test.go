@@ -16,7 +16,7 @@ func TestReadActiveSegmentWithAnEntry(t *testing.T) {
 
 	appendEntryResponse, _ := segments.Append("topic", []byte("microservices"))
 
-	storedEntry, _ := segments.Read(appendEntryResponse.FileId, appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
+	storedEntry, _ := segments.Read(appendEntryResponse.FileId, appendEntryResponse.Offset, appendEntryResponse.EntryLength)
 	if string(storedEntry.Key) != "topic" {
 		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
 	}
@@ -36,7 +36,7 @@ func TestReadAnInactiveSegmentInvolvingRollover(t *testing.T) {
 	_, _ = segments.Append("diskType", []byte("solid state drive"))
 	_, _ = segments.Append("databaseType", []byte("distributed"))
 
-	storedEntry, _ := segments.Read(appendEntryResponseTopic.FileId, appendEntryResponseTopic.Offset, uint64(appendEntryResponseTopic.EntryLength))
+	storedEntry, _ := segments.Read(appendEntryResponseTopic.FileId, appendEntryResponseTopic.Offset, appendEntryResponseTopic.EntryLength)
 	if string(storedEntry.Key) != "topic" {
 		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
 	}
@@ -54,7 +54,7 @@ func TestAttemptsToReadInvalidSegment(t *testing.T) {
 
 	appendEntryResponse, _ := segments.Append("topic", []byte("microservices"))
 
-	_, err := segments.Read(10, appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
+	_, err := segments.Read(10, appendEntryResponse.Offset, appendEntryResponse.EntryLength)
 	if err == nil {
 		t.Fatalf("Expected an error while reading a segment with an invalid file id but received none")
 	}
@@ -69,7 +69,7 @@ func TestReadASegmentWithADeletedEntry(t *testing.T) {
 
 	appendEntryResponse, _ := segments.AppendDeleted("topic")
 
-	storedEntry, _ := segments.Read(appendEntryResponse.FileId, appendEntryResponse.Offset, uint64(appendEntryResponse.EntryLength))
+	storedEntry, _ := segments.Read(appendEntryResponse.FileId, appendEntryResponse.Offset, appendEntryResponse.EntryLength)
 	if string(storedEntry.Key) != "topic" {
 		t.Fatalf("Expected key to be %v, received %v", "topic", string(storedEntry.Key))
 	}

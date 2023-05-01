@@ -128,6 +128,13 @@ func (kv *KVStore[Key]) Sync() {
 	kv.segments.Sync()
 }
 
+func (kv *KVStore[Key]) Shutdown() {
+	kv.lock.Lock()
+	defer kv.lock.Unlock()
+
+	kv.segments.Shutdown()
+}
+
 func (kv *KVStore[Key]) reload(cfg *config.Config[Key]) error {
 	kv.lock.Lock()
 	defer kv.lock.Unlock()

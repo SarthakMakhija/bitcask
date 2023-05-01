@@ -44,6 +44,11 @@ func (db *DB[Key]) Get(key Key) ([]byte, error) {
 
 func (db *DB[Key]) Shutdown() {
 	db.worker.Stop()
+	db.kvStore.Shutdown()
+}
+
+func (db *DB[Key]) Sync() {
+	db.kvStore.Sync()
 }
 
 func (db *DB[Key]) clearLog() {

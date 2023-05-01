@@ -161,6 +161,13 @@ func (segments *Segments[Key]) Sync() {
 	}
 }
 
+func (segments *Segments[Key]) Shutdown() {
+	segments.activeSegment = nil
+	for fileId, _ := range segments.inactiveSegments {
+		delete(segments.inactiveSegments, fileId)
+	}
+}
+
 func (segments *Segments[Key]) maybeRolloverActiveSegment() error {
 	newSegment, err := segments.maybeRolloverSegment(segments.activeSegment)
 	if err != nil {

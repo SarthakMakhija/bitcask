@@ -225,9 +225,7 @@ func TestReload(t *testing.T) {
 	_ = kv.Put("engine", []byte("bitcask"))
 
 	kv.Sync()
-	for fileId, _ := range kv.segments.AllInactiveSegments() {
-		delete(kv.segments.AllInactiveSegments(), fileId)
-	}
+	kv.Shutdown()
 
 	kv, _ = NewKVStore[serializableKey](config)
 	defer kv.ClearLog()

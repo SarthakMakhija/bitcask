@@ -3,6 +3,7 @@ package bitcask
 import (
 	"bitcask/config"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
@@ -143,5 +144,31 @@ func TestDeleteAndDoAGet(t *testing.T) {
 	_, err := db.Get("topic")
 	if err == nil {
 		t.Fatalf("Expected %v to have been deleted but was found in the database", "topic")
+	}
+}
+
+func TestReloadDB(t *testing.T) {
+	cfg := config.NewConfig[serializableKey](".", 32, 16, config.NewMergeConfig[serializableKey](2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
+	db, _ := NewDB[serializableKey](cfg)
+
+	for count := 1; count <= 100; count++ {
+		countAsString := strconv.Itoa(count)
+		_ = db.Put(serializableKey(countAsString), []byte(countAsString))
+	}
+
+	db.Sync()
+	db.Shutdown()
+
+	db, _ = NewDB[serializableKey](cfg)
+	defer db.clearLog()
+
+	for count := 1; count <= 100; count++ {
+		countAsString := strconv.Itoa(count)
+		value, _ := db.SilentGet(serializableKey(countAsString))
+		if string(value) != countAsString {
+			t.Fatalf("Expected value to be %v for the key %v, received %v", countAsString, countAsString, string(value))
+		}
 	}
 }

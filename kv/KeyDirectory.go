@@ -22,13 +22,15 @@ type KeyDirectory[Key config.BitCaskKey] struct {
 //	 }
 //
 // During merge and compaction process, we might merge K inactive segments and after those merged segments are written back to the disk, we
-// will update the state of the merged keys in KeyDirectory. The representation of any Key on disk is a byte slice ([]byte), that means in order to update the state
-// of the KeyDirectory, we need to convert a byte slice back to the `Key type` which is `serializableKey` in this example.
-// That means deserialization of byte slice to Key type is needed merge and compaction to update the state in the KeyDirectory.
+// will update the state of the merged keys in KeyDirectory. More on this in Worker.go.
+// The representation of any Key on disk is a byte slice ([]byte), that means in order to update the state of the KeyDirectory,
+// we need to convert a byte slice back to the `Key type` which is `serializableKey` in this example.
+// That means deserialization of byte slice to Key type is needed during merge and compaction to update the state in the KeyDirectory.
 // The cost of deserialization on this machine: "MacBook Pro (16-inch, 2019), 2.6 GHz 6-Core Intel Core i7, 16 GB 2667 MHz DDR4" was 27ns.
 // In order to reduce this cost, we might be tempted to used byte slice as the key in the hashmap but Golang does not allow that.
-// So, it might be worth comparing golang's HashMap to a data structure like `Skiplist` or `AVL tree` or a `Red black tree` and if the
-// benchmarks of put and get in golang's HashMap are same as that of an alternative data structure, it makes sense to replace a generically typed hashmap with an alternative data structure that stores key as a byte slice.
+// So, it might be worth comparing golang's HashMap to alternate data structures like `Skiplist` or `AVL tree` or a `Red black tree` and
+// if the benchmarks for put and get in golang's HashMap are same as that of an alternative data structure,
+// it makes sense to replace a generically typed HashMap with an alternative data structure that will store key as a byte slice.
 func NewKeyDirectory[Key config.BitCaskKey](initialCapacity uint64) *KeyDirectory[Key] {
 	return &KeyDirectory[Key]{
 		entryByKey: make(map[Key]*Entry, initialCapacity),

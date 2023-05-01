@@ -214,3 +214,39 @@ func TestWriteBacks(t *testing.T) {
 		t.Fatalf("Expected value to be %v, received %v", "Microservices", string(value))
 	}
 }
+
+func TestReload(t *testing.T) {
+	config := bitCaskConfig.NewConfig(".", 8, 16, bitCaskConfig.NewMergeConfig(2, func(key []byte) serializableKey {
+		return serializableKey(key)
+	}))
+	kv, _ := NewKVStore[serializableKey](config)
+	_ = kv.Put("topic", []byte("microservices"))
+	_ = kv.Put("diskType", []byte("solid state drive"))
+	_ = kv.Put("engine", []byte("bitcask"))
+
+	kv.Sync()
+	for fileId, _ := range kv.segments.AllInactiveSegments() {
+		delete(kv.segments.AllInactiveSegments(), fileId)
+	}
+
+	kv, _ = NewKVStore[serializableKey](config)
+	defer kv.ClearLog()
+
+	value, _ := kv.SilentGet("topic")
+
+	if !reflect.DeepEqual([]byte("microservices"), value) {
+		t.Fatalf("Expected value to be %v, received %v", "microservices", string(value))
+	}
+
+	value, _ = kv.SilentGet("diskType")
+
+	if !reflect.DeepEqual([]byte("solid state drive"), value) {
+		t.Fatalf("Expected value to be %v, received %v", "solid state drive", string(value))
+	}
+
+	value, _ = kv.SilentGet("engine")
+
+	if !reflect.DeepEqual([]byte("bitcask"), value) {
+		t.Fatalf("Expected value to be %v, received %v", "bitcask", string(value))
+	}
+}

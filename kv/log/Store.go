@@ -28,6 +28,18 @@ func NewStore(filePath string) (*Store, error) {
 	}, nil
 }
 
+func ReloadStore(filePath string) (*Store, error) {
+	reader, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
+	if err != nil {
+		return nil, err
+	}
+	return &Store{
+		writer:        nil,
+		reader:        reader,
+		currentOffset: 0,
+	}, nil
+}
+
 func (store *Store) append(bytes []byte) (int64, error) {
 	bytesWritten, err := store.writer.Write(bytes)
 	offset := store.currentOffset
@@ -72,5 +84,5 @@ func (store *Store) stopWrites() {
 }
 
 func (store *Store) remove() {
-	_ = os.RemoveAll(store.writer.Name())
+	_ = os.RemoveAll(store.reader.Name())
 }

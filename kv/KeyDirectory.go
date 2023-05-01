@@ -15,6 +15,12 @@ func NewKeyDirectory[Key config.BitCaskKey](initialCapacity uint64) *KeyDirector
 	}
 }
 
+func (keyDirectory *KeyDirectory[Key]) Reload(fileId uint64, entries []*log.MappedStoredEntry[Key]) {
+	for _, entry := range entries {
+		keyDirectory.entryByKey[entry.Key] = NewEntry(fileId, int64(entry.KeyOffset), entry.EntryLength)
+	}
+}
+
 func (keyDirectory *KeyDirectory[Key]) Put(key Key, value *Entry) {
 	keyDirectory.entryByKey[key] = value
 }

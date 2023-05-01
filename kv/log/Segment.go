@@ -15,10 +15,12 @@ type StoredEntry struct {
 }
 
 type MappedStoredEntry[K config.BitCaskKey] struct {
-	Key       K
-	Value     []byte
-	Deleted   bool
-	Timestamp uint32
+	Key         K
+	Value       []byte
+	Deleted     bool
+	Timestamp   uint32
+	KeyOffset   uint32
+	EntryLength uint32
 }
 
 type AppendEntryResponse struct {
@@ -34,6 +36,7 @@ type Segment[Key config.BitCaskKey] struct {
 }
 
 const segmentFilePrefix = "bitcask"
+const segmentFileSuffix = "data"
 
 func NewSegment[Key config.BitCaskKey](fileId uint64, directory string) (*Segment[Key], error) {
 	filePath, err := createSegment(fileId, directory)
@@ -41,6 +44,19 @@ func NewSegment[Key config.BitCaskKey](fileId uint64, directory string) (*Segmen
 		return nil, err
 	}
 	store, err := NewStore(filePath)
+	if err != nil {
+		return nil, err
+	}
+	return &Segment[Key]{
+		fileId:   fileId,
+		filePath: filePath,
+		store:    store,
+	}, nil
+}
+
+func ReloadInactiveSegment[Key config.BitCaskKey](fileId uint64, directory string) (*Segment[Key], error) {
+	filePath := segmentName(fileId, directory)
+	store, err := ReloadStore(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +89,7 @@ func (segment *Segment[Key]) read(offset int64, size uint32) (*StoredEntry, erro
 	return storedEntry, nil
 }
 
-func (segment *Segment[Key]) readFull(keyMapper func([]byte) Key) ([]*MappedStoredEntry[Key], error) {
+func (segment *Segment[Key]) ReadFull(keyMapper func([]byte) Key) ([]*MappedStoredEntry[Key], error) {
 	bytes, err := segment.store.readFull()
 	if err != nil {
 		return nil, err
@@ -108,5 +124,5 @@ func createSegment(fileId uint64, directory string) (string, error) {
 }
 
 func segmentName(fileId uint64, directory string) string {
-	return path.Join(directory, fmt.Sprintf("%v_%v.data", fileId, segmentFilePrefix))
+	return path.Join(directory, fmt.Sprintf("%v_%v.%v", fileId, segmentFilePrefix, segmentFileSuffix))
 }

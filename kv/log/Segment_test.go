@@ -104,7 +104,7 @@ func TestNewSegmentByReadingFull(t *testing.T) {
 	_, _ = segment.append(NewEntry[serializableKey]("topic", []byte("microservices"), clock.NewSystemClock()))
 	_, _ = segment.append(NewEntry[serializableKey]("disk", []byte("ssd"), clock.NewSystemClock()))
 
-	entries, _ := segment.readFull(func(key []byte) serializableKey {
+	entries, _ := segment.ReadFull(func(key []byte) serializableKey {
 		return serializableKey(key)
 	})
 

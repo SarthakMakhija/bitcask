@@ -200,7 +200,7 @@ func TestRemoveInactiveSegmentById(t *testing.T) {
 func allInactiveSegmentsKeys(segments *Segments[serializableKey]) []serializableKey {
 	var allKeys []serializableKey
 	for _, segment := range segments.inactiveSegments {
-		contents, _ := segment.readFull(func(key []byte) serializableKey {
+		contents, _ := segment.ReadFull(func(key []byte) serializableKey {
 			return serializableKey(key)
 		})
 		for _, content := range contents {

@@ -2,27 +2,31 @@ package kv
 
 import (
 	"bitcask/config"
-	log2 "bitcask/kv/log"
+	appendOnlyLog "bitcask/kv/log"
 	"errors"
 	"fmt"
 	"sync"
 )
 
 type KVStore[Key config.BitCaskKey] struct {
-	segments     *log2.Segments[Key]
+	segments     *appendOnlyLog.Segments[Key]
 	keyDirectory *KeyDirectory[Key]
 	lock         sync.RWMutex
 }
 
 func NewKVStore[Key config.BitCaskKey](config *config.Config[Key]) (*KVStore[Key], error) {
-	segments, err := log2.NewSegments[Key](config.Directory(), config.MaxSegmentSizeInBytes(), config.Clock())
+	segments, err := appendOnlyLog.NewSegments[Key](config.Directory(), config.MaxSegmentSizeInBytes(), config.Clock())
 	if err != nil {
 		return nil, err
 	}
-	return &KVStore[Key]{
+	store := &KVStore[Key]{
 		segments:     segments,
 		keyDirectory: NewKeyDirectory[Key](config.KeyDirectoryCapacity()),
-	}, nil
+	}
+	if err := store.reload(config); err != nil {
+		return nil, err
+	}
+	return store, nil
 }
 
 func (kv *KVStore[Key]) Put(key Key, value []byte) error {
@@ -82,21 +86,21 @@ func (kv *KVStore[Key]) Get(key Key) ([]byte, error) {
 	return nil, errors.New(fmt.Sprintf("Key %v does not exist", key))
 }
 
-func (kv *KVStore[Key]) ReadInactiveSegments(totalSegments int, keyMapper func([]byte) Key) ([]uint64, [][]*log2.MappedStoredEntry[Key], error) {
+func (kv *KVStore[Key]) ReadInactiveSegments(totalSegments int, keyMapper func([]byte) Key) ([]uint64, [][]*appendOnlyLog.MappedStoredEntry[Key], error) {
 	kv.lock.RLock()
 	defer kv.lock.RUnlock()
 
 	return kv.segments.ReadInactiveSegments(totalSegments, keyMapper)
 }
 
-func (kv *KVStore[Key]) ReadAllInactiveSegments(keyMapper func([]byte) Key) ([]uint64, [][]*log2.MappedStoredEntry[Key], error) {
+func (kv *KVStore[Key]) ReadAllInactiveSegments(keyMapper func([]byte) Key) ([]uint64, [][]*appendOnlyLog.MappedStoredEntry[Key], error) {
 	kv.lock.RLock()
 	defer kv.lock.RUnlock()
 
 	return kv.segments.ReadAllInactiveSegments(keyMapper)
 }
 
-func (kv *KVStore[Key]) WriteBack(fileIds []uint64, changes map[Key]*log2.MappedStoredEntry[Key]) error {
+func (kv *KVStore[Key]) WriteBack(fileIds []uint64, changes map[Key]*appendOnlyLog.MappedStoredEntry[Key]) error {
 	kv.lock.Lock()
 	defer kv.lock.Unlock()
 
@@ -115,4 +119,25 @@ func (kv *KVStore[Key]) ClearLog() {
 
 	kv.segments.RemoveActive()
 	kv.segments.RemoveAllInactive()
+}
+
+func (kv *KVStore[Key]) Sync() {
+	kv.lock.Lock()
+	defer kv.lock.Unlock()
+
+	kv.segments.Sync()
+}
+
+func (kv *KVStore[Key]) reload(cfg *config.Config[Key]) error {
+	kv.lock.Lock()
+	defer kv.lock.Unlock()
+
+	for fileId, segment := range kv.segments.AllInactiveSegments() {
+		entries, err := segment.ReadFull(cfg.MergeConfig().KeyMapper())
+		if err != nil {
+			return err
+		}
+		kv.keyDirectory.Reload(fileId, entries)
+	}
+	return nil
 }

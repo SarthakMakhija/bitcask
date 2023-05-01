@@ -6,6 +6,9 @@ import (
 	"bitcask/kv/log/id"
 	"errors"
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
 )
 
 type Segments[Key config.BitCaskKey] struct {
@@ -30,14 +33,18 @@ func NewSegments[Key config.BitCaskKey](directory string, maxSegmentSizeBytes ui
 		return nil, err
 	}
 
-	return &Segments[Key]{
+	segments := &Segments[Key]{
 		activeSegment:       activeSegment,
 		inactiveSegments:    make(map[uint64]*Segment[Key]),
 		fileIdGenerator:     fileIdGenerator,
 		clock:               clock,
 		maxSegmentSizeBytes: maxSegmentSizeBytes,
 		directory:           directory,
-	}, nil
+	}
+	if err := segments.reload(); err != nil {
+		return nil, err
+	}
+	return segments, nil
 }
 
 func (segments *Segments[Key]) Append(key Key, value []byte) (*AppendEntryResponse, error) {
@@ -72,7 +79,7 @@ func (segments *Segments[Key]) ReadInactiveSegments(totalSegments int, keyMapper
 		if index >= totalSegments {
 			break
 		}
-		entries, err := segment.readFull(keyMapper)
+		entries, err := segment.ReadFull(keyMapper)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -85,6 +92,14 @@ func (segments *Segments[Key]) ReadInactiveSegments(totalSegments int, keyMapper
 
 func (segments *Segments[Key]) ReadAllInactiveSegments(keyMapper func([]byte) Key) ([]uint64, [][]*MappedStoredEntry[Key], error) {
 	return segments.ReadInactiveSegments(len(segments.inactiveSegments), keyMapper)
+}
+
+func (segments *Segments[Key]) ReadInactiveSegment(fileId uint64, keyMapper func([]byte) Key) ([]*MappedStoredEntry[Key], error) {
+	segment, ok := segments.inactiveSegments[fileId]
+	if !ok {
+		return nil, errors.New(fmt.Sprintf("%v is not an inactive segment", fileId))
+	}
+	return segment.ReadFull(keyMapper)
 }
 
 func (segments *Segments[Key]) WriteBack(changes map[Key]*MappedStoredEntry[Key]) ([]*WriteBackResponse[Key], error) {
@@ -135,6 +150,17 @@ func (segments *Segments[Key]) Remove(fileIds []uint64) {
 	}
 }
 
+func (segments *Segments[Key]) AllInactiveSegments() map[uint64]*Segment[Key] {
+	return segments.inactiveSegments
+}
+
+func (segments *Segments[Key]) Sync() {
+	segments.activeSegment.sync()
+	for _, segment := range segments.inactiveSegments {
+		segment.sync()
+	}
+}
+
 func (segments *Segments[Key]) maybeRolloverActiveSegment() error {
 	newSegment, err := segments.maybeRolloverSegment(segments.activeSegment)
 	if err != nil {
@@ -157,4 +183,28 @@ func (segments *Segments[Key]) maybeRolloverSegment(segment *Segment[Key]) (*Seg
 		return newSegment, nil
 	}
 	return nil, nil
+}
+
+func (segments *Segments[Key]) reload() error {
+	entries, err := os.ReadDir(segments.directory)
+	if err != nil {
+		return err
+	}
+	suffix := segmentFilePrefix + "." + segmentFileSuffix
+	for _, entry := range entries {
+		if strings.HasSuffix(entry.Name(), suffix) {
+			fileId, err := strconv.ParseUint(strings.Split(entry.Name(), "_")[0], 10, 64)
+			if err != nil {
+				return err
+			}
+			if fileId != segments.activeSegment.fileId {
+				segment, err := ReloadInactiveSegment[Key](fileId, segments.directory)
+				if err != nil {
+					return err
+				}
+				segments.inactiveSegments[fileId] = segment
+			}
+		}
+	}
+	return nil
 }

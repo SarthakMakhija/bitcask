@@ -4,7 +4,9 @@ provide a reference implementation of bitcask to help anyone interested in stora
 
 [![bitcask](https://github.com/SarthakMakhija/bitcask/actions/workflows/build.yml/badge.svg)](https://github.com/SarthakMakhija/bitcask/actions/workflows/build.yml)
 
-![bitcask](https://user-images.githubusercontent.com/21108320/235445730-4ed5e92c-b459-4e11-b7fd-6640251b4112.png)
+![bitcask_keydir](https://user-images.githubusercontent.com/21108320/236152173-c48ec978-f1b3-4a6c-a31e-630af6e3bdce.png)
+
+I have written a detailed blog on [bitcask](https://tech-lessons.in/blog/bitcask/).
 
 # Features
 - Support for `put`, `get`, `update` and `delete` operations
